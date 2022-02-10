@@ -1,0 +1,3472 @@
+
+% Written by hal clark 2014.
+% Tweaked in February 2022 to make it compile (replaced SI package with macros).
+
+\documentclass{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Package inclusions. Most tweaking happens in following section.
+
+%\usepackage[paperheight=216mm,paperwidth=279mm,marginparsep=0pt]{geometry}
+\usepackage[letterpaper,marginparsep=0pt]{geometry}
+%\geometry{landscape}
+\geometry{margin=0.25cm}
+%\geometry{bottom=2.7cm}  % The footer sticks into the bottom margin, so shorten it a bit.
+%\geometry{showframe}
+
+%\usepackage{background}
+%\SetBgScale{1.0}
+%\SetBgAngle{0}
+%\SetBgOpacity{1.0}
+%\SetBgColor{black}
+%\SetBgPosition{\textwidth,1}
+%\SetBgHshift{-0.75cm}
+%\SetBgVshift{0.65cm}
+%\SetBgContents{Haley Clark}
+
+\usepackage{fixltx2e} % "Patches for LaTeX". Needed for \textsubscript{}.
+
+% Fonts, font encoding.
+\usepackage[T1]{fontenc} % General good practice. Needed for bolded smallcaps.
+%\usepackage{lmodern} % Updated Computer Modern. More glyphs. Better sizing.
+%                       Unfortunately, no bolded small caps...
+\usepackage{microtype}
+\usepackage{textcase} % For `\MakeTextLowercase{...}`
+\usepackage{amsmath}
+\usepackage{amssymb} % For \Lsh (curved UL arrow); \looparrowleft (UP loop).
+\usepackage{dsfont} % For nice 'real #', 'complex #', etc. symbols: \mathds{R}.
+%\usepackage{mathtools} 
+\usepackage{braket} % Quantum mech. bra's and ket's.
+
+\usepackage{marvosym} % For \Sun, \Earth, \Smiley, ...
+%\usepackage{mathabx} % For math-mode \Sun, \Earth, ...
+
+% Other packages.
+%\usepackage{lipsum} % Lorem ipsum placeholder: `\lipsum[1-6]`.
+%\usepackage{microtype}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+\usepackage{multicol} % The whole sheet is enclosed in a multicol.
+\usepackage{multirow}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage{hyperref}
+
+%\usepackage{siunitx} % Routines for nice formatting of numbers & their units.
+
+%\usepackage{lmodern} % Updated Computer Modern. More glyphs. Better sizing.
+%\usepackage[T1]{fontenc} % General good practice. Needed for bolded smallcaps.
+
+\usepackage{xfrac} % Tighter, more concise slanted fractions, like: ^{a}/_{b}.
+
+\usepackage{cancel} % Drawing arrows over math elements. Shows they are zero.
+
+%\usepackage[explicit]{titlesec} % For tweaking (sub-(sub-))section headings.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Document-wide tweaking. (Unless tweaked again inline...)
+
+\pagestyle{empty} % Disable header, footer.
+
+% Paragraph spacing. Reduce the empty space between paragraph blocks.
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25ex}
+
+% Arabic number to Roman numeral conversion (text numerals).
+\makeatletter
+\newcommand*{\ToRomanNumeral}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\makeatother
+
+% Simple environment for 'shrink-wrapping' the margins around some specific
+% text. Usage:
+%   \begin{ygorchangemargin}{1cm}{1in} 
+%   your text here ...
+%   \end{ygorchangemargin} 
+%
+\def\ygorchangemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
+\let\endygorchangemargin=\endlist
+
+% Handy horizontal rules.
+% 1) A rule which fills the remaining space (to the margin).
+%    See http://stackoverflow.com/questions/2553392/latex-rule-filling-the-line.
+%    -Arg 1 (opt.) - How high to raise the rule.
+%    -Arg 2        - Thickness of the rule. (Default lines are 0.4pt thick.)
+\newcommand{\YgorRaisedFillRule}[2][0em]{\leaders\hbox{\rule[#1]{1pt}{#2}}\hfill}
+
+\makeatletter
+\def\HrulefillThick{\leavevmode\leaders\hrule height 1.5ex \hfill\kern\z@}    
+\makeatother
+
+\makeatletter
+\def\HrulefillThin{\leavevmode\leaders\hrule height 0.5ex \hfill\kern\z@}
+\makeatother
+
+\makeatletter
+\newcommand*{\YgorShortRule}{\rule[0.25em]{2cm}{0.3pt}}
+\makeatother
+
+\makeatletter
+\newcommand*{\YgorFillRule}{\YgorRaisedFillRule[0.25em]{0.3pt}}
+\makeatother
+
+\setcounter{secnumdepth}{0} % Disable section numbers before headings.
+
+% A (TeX) macro for column vectors with alternate braces. Use like:
+%   $\YgorLRCriteria{x>0,}{b>0} + \YgorNoCriteria{1+2+3}{4+5}$
+%   $\YgorLCriteria{0 \iff x=0}{1 else}$
+%
+% Note: These only work with TWO criteria. You'll have to make variants for
+% other amounts of criteria (very easy -- inc 2 and add more pounds...).
+\newcommand{\YgorNoCriteria}[2]{\!\!\!\!\begin{array}{c}#1\\#2\\%
+     \end{array}\!\!\!\!}
+\newcommand{\YgorLCriteria}[2]{\!\!\left\{\!\!\!\!\begin{array}{c}%
+     #1\\#2\\\end{array}\!\!\!\!\right.\!\!}
+\newcommand{\YgorRCriteria}[2]{\!\!\left.\!\!\!\!\begin{array}{c}%
+     #1\\#2\\\end{array}\!\!\!\!\right\}\!\!}
+\newcommand{\YgorLRCriteria}[2]{\!\!\left\{\!\!\!\!\begin{array}{c}%
+     #1\\#2\\\end{array}\!\!\!\!\right\}\!\!}
+
+% A simple means of getting 'up' and 'down' (super- and sub-scripted) math.
+% Useful for squishing content into small spaces.
+\newcommand{\YgorUD}[2]{\,\!^{#1}_{#2}}
+
+
+% Shrinkwrap the section, subsection, and subsubsection macros. Space saving.
+\makeatletter
+\renewcommand{\section}[1]{%
+     \@startsection{section}{1}{0mm}{0.01ex}{0.01ex}{%
+         \normalfont\Large\bfseries\underline\centering }*{%
+         \noindent\HrulefillThick%
+              ~#1~\HrulefillThick}}
+\renewcommand{\subsection}[1]{%
+     \@startsection{subsection}{2}{0mm}{0.01ex}{0.01ex}{%
+         \normalfont\Large\bfseries }*{%
+         \noindent\HrulefillThin%
+              ~#1~\HrulefillThin}}
+\renewcommand{\subsubsection}{%
+     \@startsection{subsubsection}{3}{0mm}{0.01ex}{0.01ex}{%
+         \normalfont\large\bfseries}}
+%\@startsection {chapter}{0}{-1em}{5em plus 2em minus -2em}{1em plus 1em minus
+%-1em }{\LARGE\bfseries }[#1]{#1\hrulefill}} 
+\makeatother
+
+%\titleformat{\section}{\normalfont\bfseries\large\underline}{}{0pt}{%
+%    \noindent\YgorRaisedFillRule[0.25em]{0.5em}%
+%    ~\thesection\quad#1~
+%    \YgorRaisedFillRule[0.25em]{0.5em}}
+
+
+% Specify distance between header (i.e., the title) and first paragraph.
+%\setlength{\headsep}{2.0cm}
+%\setlength{\headsep}{2em}
+
+% Nice smallcaps.
+\newcommand{\YgorSmallcaps}[1]{{\large \scshape \MakeTextLowercase{#1}}} % Fairly small...
+\newcommand{\YgorBoldSmallcaps}[1]{{% NOTE: req's: \usepackage[T1]{fontenc}.
+    \large \bfseries \textsc{\MakeTextLowercase{#1}}}} % Fairly small...
+
+% Fairly tight boxes around text or math. Use like:
+%    Hello \textSq{1} world! $f(x):=\Sq{1}+\Sq{2}$.
+% Found at http://tex.stackexchange.com/questions/42406/text-in-squared-box
+\makeatletter
+\def\textSq#1{%
+\begingroup% make boxes and lengths local
+\setlength{\fboxsep}{0.3ex}% SET ANY DESIRED PADDING HERE
+\setbox1=\hbox{#1}% save the contents
+\setlength{\@tempdima}{\maxof{\wd1}{\ht1+\dp1}}% size of the box
+\setlength{\@tempdimb}{(\@tempdima-\ht1+\dp1)/2}% vertical raise
+\raise-\@tempdimb\hbox{\fbox{\vbox to \@tempdima{%
+  \vfil\hbox to \@tempdima{\hfil\copy1\hfil}\vfil}}}%
+\endgroup%
+}
+\def\Sq#1{\textSq{\ensuremath{#1}}}%
+\makeatother
+
+
+% Allow 'engineering' notation for numbers and quantities.
+%    e.g., allow '\num{1e3}' and '\SI{2.3e5}{kg}' style commands.
+%\sisetup{output-exponent-marker=\ensuremath{\mathrm{E}}}
+%\sisetup{unit-color=purple}
+\newcommand{\SI}[2]{#1\ #2}
+\newcommand{\num}[1]{#1}
+
+
+% Define the famous 'script r' ala David J. Griffith's electrodynamics textbook.
+% This comes from his website on 20140807 at
+%     http://academic.reed.edu/physics/faculty/griffiths/script_r.zip.
+% It (unfortunately!) works around an absence using two images. Well, it works.
+% But it goes out of sync with font sizes.
+\def\rcurs{{\mbox{$\resizebox{1.3ex}{0.5em}{\includegraphics{ScriptRResized}}$}}}
+\def\brcurs{{\mbox{$\resizebox{1.43ex}{0.55em}{\includegraphics{BoldRResized}}$}}}
+\def\hrcurs{{\mbox{$\widehat \brcurs$}}}
+
+\def\rcurst{{\mbox{$\resizebox{0.9ex}{0.3em}{\includegraphics{ScriptRResized}}$}}}
+
+% A simple 'spring and mass' symbol for referring to (classical) oscillators or
+% harmonic oscillators.
+\def\springandmass{{\mbox{$\resizebox{1.5ex}{0.3em}{\includegraphics{SpringAndMass}}$}}}
+
+
+% Some missing inverse trigonometric routines. They are omitted because there 
+% is ambiguity about which value to take when a branch cut is taken, etc.. 
+% This is not really a problem for my current purposes.
+%   Trigonometric:
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\csch}{csch}
+\DeclareMathOperator{\arcsec}{arcsec} 
+\DeclareMathOperator{\arccot}{arccot}
+\DeclareMathOperator{\arccsc}{arccsc}
+\DeclareMathOperator{\arsec}{arcsec} % These are just in case someone accident-
+\DeclareMathOperator{\arcot}{arccot} % ally types. See the hyperbolic's below
+\DeclareMathOperator{\arcsc}{arccsc} % for an explanation.
+%   Hyperbolic:
+\DeclareMathOperator{\arccosh}{arcosh} % Note: 'arcosh', not 'arccosh' is the
+\DeclareMathOperator{\arcsinh}{arsinh} % correct spelling. From the Wikipedia
+\DeclareMathOperator{\arctanh}{artanh} % page on [Inverse hyperbolic functions]
+\DeclareMathOperator{\arcsech}{arsech} % it is stated that: "...the prefix arc
+\DeclareMathOperator{\arccsch}{arcsch} % is the abbreviation for arcus, while
+\DeclareMathOperator{\arccoth}{arcoth} % the prefix ar stands for area.
+\DeclareMathOperator{\arcosh}{arcosh}
+\DeclareMathOperator{\arsinh}{arsinh}
+\DeclareMathOperator{\artanh}{artanh}
+\DeclareMathOperator{\arsech}{arsech}
+\DeclareMathOperator{\arcsch}{arcsch}
+\DeclareMathOperator{\arcoth}{arcoth}
+
+% Common abbreviations and tricky stuff which subtly changes from day to day.
+\newcommand{\NA}{\textsc{n/a}}  % for "not applicable"
+\newcommand{\eg}{e.g.,\ }       % proper form of examples (\eg a, b, c)
+\newcommand{\ie}{i.e.,\ }       % proper form for that is (\ie a, b, c)
+\newcommand{\vs}{vs.\ }         % Abbr. of 'versus' ( A \vs B)
+\newcommand{\etal}{\emph{et al}}
+\newcommand{\viz}{viz.\ }       % Abbr. of 'videlicet' or roughly "namely".
+\newcommand{\etc}{etc.\xspace}  % Abbr. of et cetera.
+\newcommand{\abscissae}{absciss\ae{}\xspace} % The horizontal axis.
+\newcommand{\ordinate}{ordinate\xspace} % The vertical axis.
+\newcommand{\via}{via\xspace}
+\newcommand{\cf}{cf.\xspace}    % Abbr. of Latin confer (compare).
+
+\newcommand{\bachelors}{bachelor's\xspace} % Jim got his \bachelors degree at..
+\newcommand{\Bachelors}{Bachelor's\xspace} % Jim has a Bachelor of Fine Arts.
+\newcommand{\BSc}{BSc\xspace}
+\newcommand{\masters}{master's\xspace} % Jim got his \masters degree at..
+\newcommand{\Masters}{Master's\xspace} % Jim has a Master of Fine Arts degree.
+\newcommand{\MSc}{MSc\xspace}
+\newcommand{\PhD}{PhD\xspace}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Tweaks that cannot precede document begin. Last-minute tweaks.
+
+%\raggedright % Disable right-justification. Looks to be needed for toight cols.
+%\scriptsize % Reduce text size. Maybe better to adjust font size directly...
+
+% Scale the spacing between lines of text in a paragraph to a fraction of what
+% the default is.
+\linespread{0.5}
+
+% Reduce excess space above math equations.
+%\setlength{\abovedisplayskip}{0pt}
+
+\begin{multicols}{2} % Begin & tweak a document-wide multicolumn layout.
+%\setlength{\columnseprule}{0.25pt}
+%\setlength{\premulticols}{1pt}
+%\setlength{\postmulticols}{1pt}
+%\setlength{\multicolsep}{1pt}
+%\setlength{\columnsep}{2pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+{\centering     \YgorBoldSmallcaps{Phys.\xspace Formulae} -- \today }
+
+%%%%%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%%%%%
+\section{SI Base Units}
+
+\textbf{Length} \sfrac{L}{metre}: path length of light in vacuum during 
+$dt=\sfrac{1}{299792458}s$. 
+\textbf{Mass} \sfrac{M}{kilogram}: mass of an international prototype.
+\textbf{Time} \sfrac{T}{second}: $dt$ of $9192631770$ $^{133}Cs$ 
+(hyperfine split, $@\,0\,K$) ground state oscillations.
+\textbf{Elec.\ Current} \sfrac{I}{ampere}: produces $\SI{2E-7}{\sfrac{N}{m}}$
+between two $L=\infty$, $A=0$ wires $1\,m$ apart in vaccum.
+\textbf{Thermo.\ Temp.} \sfrac{$\Theta$}{kelvin}:
+\sfrac{1}{273.16}\textsuperscript{th} the $T$ of triple point water.
+\textbf{Amount of Substance} \sfrac{N}{mole}: as many entities (atoms,
+molecules, $e^{-}$, \etc) as there are atoms in $12\,g$ of ground state $^{12}C$.
+\textbf{Luminous Intensity} \sfrac{J}{candela}: directional intensity of 
+a monochromatic ($f=\SI{5.40E12}{Hz}$) source with directional radiant intensity
+\sfrac{1}{683} watt per steradian.
+
+
+
+%%%%%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%%%%%
+\section{Constants \& Units}
+
+% For the base units, see
+% http://en.wikipedia.org/wiki/SI_base_unit#The_seven_SI_base_units
+% They are: M,L,T,I,Θ,N,J, which refer to:
+%   mass, length, time, electric current, thermodynamic temperature, amount
+%   of a substance (i.e., # of moles), and luminous intensity.
+\begin{tabular}{@{}c@{\,}|@{\,}l@{\,}|@{\,}l@{\,}|@{\,}c@{}} %
+%\begin{tabular}{@{}ll@{}ll@{}ll@{}}
+\multicolumn{1}{l}{}
+              & \multicolumn{2}{@{\,}c@{\,}}{Value(s)}  & Base \\
+% A little bit of extra headspace, else exponent touches the ceiling.
+\hline & & \\[\dimexpr-\normalbaselineskip+0.1em]
+%
+% Mass of the electron.
+$m_{e^{-}}$   & \SI{9.11E-31}{kg}
+              & $(\num{5.48E-4})\cdot{}u$
+              & {M} \\
+% Mass of the proton.
+$m_{p^{-}}$   & \SI{1.67E-27}{kg}
+              & $(1.01)\cdot{}u$
+              & {M} \\
+% Avg. molecular mass of air. (76% N2 + 24% O2).
+$\overline{m}_{air} $
+              & $(29.0)\cdot{}u$ 
+              & {$\approx \frac{3}{4}%
+                    \smash{\overset{m\quad}{N_{2}}}  + %
+                    \frac{1}{4} \smash{\overset{m\quad}{O_{2}}}$ }
+              & {M} \\
+% Mass of the Earth.
+$m_{\otimes}$ & \SI{5.97E24}{kg}
+              & $(\num{3.60E51})\cdot{}u$
+              & {M} \\
+% Mass of the Sun.
+$m_{\odot}$   & \SI{1.99E30}{kg}
+              & $(3.33E5)\cdot{}m_{\otimes}$
+              & {M} \\
+% Boltzmann's constant.
+$k_{B}$       & $\SI{1.38E-23}{\sfrac{J}{K}}$
+              & $\SI{8.62E-5}{\sfrac{eV}{K}}$
+              & $\sfrac{M L^2}{T^2 \Theta}$ \\
+% Gas constant.
+$R$           & $\SI{8.31}{\sfrac{J}{mol\,K}}$
+              & $N_{ A}k_{B}$
+              & $\sfrac{M L^{2}}{T^{2} \Theta N}$ \\
+% Avagadro's number.
+$N_{ A}$       & $\SI{6.02E23}{\sfrac{1}{mol}}$
+              & $\approx 2^{79}\SI{}{\sfrac{1}{mol}}$
+              & \sfrac{1}{N} \\
+% Planck's constant.
+$h$           & \SI{6.23E-34}{J$\cdot$s}
+              & \SI{4.14E-15}{eV$\cdot$s}
+              & $\sfrac{ML^2}{T}$ \\
+% Electron's charge.
+$e$           & \SI{1.60E-19}{C}
+              & $1$ {eV}
+              & {IT} \\ 
+% Fine structure constant.
+$\alpha$      & $\approx \sfrac{1}{137.036}$
+              & $\sfrac{e^{2}}{4\pi \epsilon_{ \circ} \hbar c}$
+              & {--} \\
+% Bohr Magneton.
+$\mu_{B}$     & \SI{5.79E-5}{eV / T}
+              & $\sfrac{e\hbar}{2m_{e}}$
+              & {$IL^{2}$} \\
+% Gravitational constant.
+$G$           & \SI{6.67E-11}{\tiny $N m^{ 2}  / kg^{ 2}$}
+              & --
+              & $\sfrac{L^{3}}{T^{2} M}$ \\
+% radiation.
+$\sigma_{ B}$& \SI{5.67E-8}{\tiny $J  / sm^{ 2} K^{ 4}$}
+              & $\sfrac{\pi^{ 2} k_{ B} }{ 60 c^{ 2} \hbar^{ 3}}$ 
+              & \\
+%
+%\end{tabular}
+%\begin{tabular}{@{}c@{\,}|@{\,}l@{\,}|@{\,}l@{\,}|@{\,}c@{}} %
+%
+% A little bit of extra headspace, else exponent touches the ceiling.
+\hline & & \\[\dimexpr-\normalbaselineskip+0.1em]
+%
+$1\,N$        & \SI{1}{ $\sfrac{kg\, m}{s^{2}}$}
+              & \SI{1}{ {$(Pa) m^{2}$}}%
+              & $\sfrac{ML}{T^{2}}$ \\
+%
+$1\,J$        & \SI{1}{ $\sfrac{kg\, m^{2}}{s^{2}}$}
+              & \SI{1}{ {$N\,m$}},%
+                \SI{1}{ {$C\,V$}}
+              & $\sfrac{ML^{2}}{T^{2}}$ \\
+%
+$1\,W$        & \SI{1}{ $\sfrac{kg\, m^{2}}{s^{3}}$}
+              & \SI{1}{ $\sfrac{J }{s}$},%
+	        \SI{1}{ {$VA$}},%
+	        \SI{1}{ {$\Omega A^{2}$}}
+              & $\sfrac{ML^{2}}{T^{3}}$ \\
+%
+$1\,F$        & \SI{1}{ $\sfrac{s^{4} A^{2}}{m^{2} kg}$}
+              & \SI{1}{ $\frac{J}{V^{2}}$},%
+                \SI{1}{ $\frac{C^{2}}{J}$},%
+                \SI{1}{ $\frac{s^{2}}{H}$}
+              & $\sfrac{T^{4} I^{2}}{L^{2} M}$ \\
+%
+$1\,\Omega$   & \SI{1}{ $\sfrac{kg\, m^{2}}{s^{3} A^{2}}$}
+              & \SI{1}{ $\frac{V}{A}$},%
+                \SI{1}{ $\frac{J\, s}{C^{2}}$},%
+                \SI{1}{ $\frac{s}{F}$}
+              & $\sfrac{M L^{2}}{T^{3} I^{2}}$ \\
+%
+$1\,V$        & \SI{1}{ $\sfrac{kg\, m^{2}}{s^{3} A}$}
+              & \SI{1}{ {$\Omega A$}},%
+                \SI{1}{ $\sfrac{J }{C}$},%
+                \SI{1}{ $\sfrac{W }{A}$}
+              & $\sfrac{M L^{2}}{T^{3} I}$ \\
+%
+$1\,T$        & \SI{1}{ $\sfrac{kg}{s^{2} A}$}
+              & \SI{1}{ $\frac{J}{m^{2} A}$},%
+                \SI{1}{ $\frac{kg}{C\, s}$}
+              & $\sfrac{M}{T^{2} I}$ \\
+%
+$1\,H$        & \SI{1}{ $\sfrac{kg\, m^{2}}{s^{2} A^{2}}$}
+              & \SI{1}{ $\frac{J}{A^{2}}$},%
+                \SI{1}{ {$\Omega s$}},%
+                \SI{1}{ $\frac{m^{2} T}{A}$}
+              & $\sfrac{M L^{2}}{T^{2} I^{2}}$ \\
+%
+
+%
+% Others: 
+%   
+%
+\end{tabular}
+
+
+%%%%%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%%%%%
+\section{Math}
+
+$\overset{\text{\underline{Shape}}}{\YgorUD{%
+        \text{Circle}%
+    }{%
+        \text{Ellipse}%
+    }}$\hfill%
+    $\overset{\text{\underline{Def.\ As}}}{\YgorUD{%
+        x^{2} + y^{2} = r^{2}%
+    }{%
+        \smash{x^{2}  / a^{2} + y^{2}  /b^{2}} = 1%
+    }}$\hfill%
+    $\overset{\text{\underline{Circumference}}}{\YgorUD{%
+        2 \pi r \phantom{r^{2}}%
+    }{%
+        \approx \pi \smash{[3a + 3b - %
+        \sqrt{ ( 3a + b ) ( a + 3b )}]}%
+    }}$\hfill%
+    $\overset{\text{\underline{Area}}}{\YgorUD{%
+        \pi r^{2}%
+    }{%
+        \pi a b%
+    }}$
+% Ellipse with semi-major and semi-minor axes r_a and r_b. Which is which is not
+% relevant for these formulae.
+%
+% The circumference needs an approx because elliptic integrals cannot be written
+% in terms of elementary functions. Here is the Ramanujan formula I found at
+%   http://en.wikipedia.org/wiki/Ellipse#Circumference . I am a tad suspect. 
+% There was a 'better' version which I numerically tested to be worse. This 
+% formula was NOT cited. But it numerically works fairly well with a few
+% discrete test numbers. Good enough for approximation purposes, I think.
+%
+
+
+$\overset{\text{\underline{Shape}}}{%
+    \YgorUD{%
+        \YgorUD{
+            \text{3-sphere}\phantom{r}%
+        }{%
+            \text{cone}_{\perp}\phantom{r^{2}}%
+        }%
+    }{%
+        \YgorUD{
+            \text{pyramid}_{\perp}\phantom{r^{2}}%
+        }{%
+            \text{n-sphere}\phantom{r^{2}}%
+        }%
+    }}$\hfill%
+    $\overset{\text{\underline{n-Area}}}{%
+    \YgorUD{%
+        \YgorUD{
+            4 \pi r^{2}%
+        }{%
+            \pi r^{2}%
+            \smash{[1+\sqrt{1+\smash{\left( h / r \right)}^{2}}]}\,%
+        }%
+    }{%
+        \YgorUD{%
+            \frac{ab}{2} [2 + %
+                    \sqrt{ 1 + \left( \sfrac{2 h }{ a} \right)\smash{^{ 2}}}+ %
+                    \sqrt{ 1 + \left( \sfrac{2 h }{b} \right)\smash{^{ 2}}}]%
+        }{%
+            2 \pi^{n / 2} r^{n - 1}  / \Gamma( n / 2 )%
+        }%
+    }}$\hfill%
+    $\overset{\text{\underline{n-Vol.}}}{%
+    \YgorUD{%
+        \YgorUD{
+            4 \pi r^{3} / 3%
+        }{%
+            \pi h r^{2} / 3%
+        }%
+    }{%
+        \YgorUD{%
+            a b h / 3\phantom{r^{2}}%
+        }{%
+            \pi^{n / 2} r^{n}  /  \Gamma( 1 + n / 2 )%
+        }%
+    }}$
+
+
+\subsection{Trigonometry Identities}
+
+$\YgorUD{%
+        \sin( x ) = ( e^{ix} - e^{ - ix} ) / 2i%
+    }{%
+        \cos( x ) = ( e^{ix} + e^{ - ix} ) / 2%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \sin( 2x ) =2 \sin( x ) \cos( x )%
+    }{%
+        \cos( 2x ) =1 - 2 \sin^{ 2 }( x )%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \sinh( x ) = ( e^{x} - e^{ - x} ) / 2%
+    }{%
+        \cosh( x ) = ( e^{x} + e^{ - x} ) / 2%
+    }$
+
+$\YgorUD{%
+        \sin^{2} ( x )=( 1-\cos( 2x ) ) / 2%
+    }{%
+        \cos^{2} ( x )=( 1+\cos( 2x ) ) / 2%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \sin( x \pm y )=\sin( x )\cos( y ) \pm \cos( x )\sin( y )%
+    }{%
+        \cos( x \pm y )=\cos( x )\cos( y ) \mp \sin( x )\sin( y )%
+    }$
+
+\hrule
+
+$\cosh^{2}(x) - \sinh^{2}(x) = 1$
+
+
+
+\subsection{Series and Sums}
+
+$\YgorUD{%
+        \lim\limits_{n \rightarrow \infty} %
+         \left( 1  +  \frac{x}{n} \right)^{ n}  =%
+        e^{x}%
+    }{%
+        \lim\limits_{x \rightarrow \infty} %
+         \left( 1  +  \frac{x}{n} \right)^{ n}   =%
+        \left( \frac{x}{n} \right)^{ n}%
+    }$\hfill\textbullet\hfill%
+    $\ln( 1  +  x )  = %
+      \left\{ \YgorUD{%
+       \sum_{k=1}^{\infty}  \frac{( - 1 )^{ k + 1}
+x^{k}}{k}
+    }{%
+       \ln ( x ) + %
+       \sum_{k=1}^{\infty}   %
+       \frac{( - 1 )^{ k + 1}}{k x^{k}}%
+    } \right| \YgorUD{%
+         -  1  <  x  \leq  1%
+        \phantom{\big|}%
+    }{%
+        |x| > 1%
+        \phantom{\big|}%
+    }$
+
+
+$e^{z}  =  \sum\limits_{n=0}^{\infty}   \frac{z^{n}}{n!}$%
+    \hfill\textbullet\hfill%
+    $\left.\sum\limits_{n=0}^{N}   x^{n} =%
+     \frac{1-x^{N - 1}}{1-x}%
+     \left(  \overset{\text{if}}{\underset{^{N \rightarrow \infty}}{\Longrightarrow}}%
+       \frac{1}{1-x}  \right)%
+    \right||x| < 1$%
+
+
+\subsection{Coordinates, Vector Calculus}
+
+$\YgorUD{%
+        \int_{\vec{a}}^{\vec{b}} %
+        ( \vec{\nabla}  f )\cdot d\vec{l} = %
+        f ( \vec{b} )  -  f ( \vec{a} )
+    }{%      
+        \vec{\nabla} ( \widehat{\rcurst} / \rcurst^{2} ) =%
+        4\pi \delta^{( 3 )} ( \vec{\rcurst} )% 
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \int   \vec{\nabla}\cdot\vec{A} dV = %
+        \oint   \vec{A}\cdot d\vec{a}%
+    }{%      
+        \nabla^{2} ( 1 / \rcurst ) =%
+        -4\pi \delta^{( 3 )} ( \vec{\rcurst} )% 
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \int   \vec{\nabla}\times\vec{A} \cdot d\vec{a} = %
+        \oint   \vec{A}\cdot d\vec{l}%
+    }{%      
+        \,% 
+    }$
+
+\hrule
+
+$\YgorUD{%
+        \vec{A}\cdot( \vec{B} \times \vec{C} ) = %
+        \vec{B}\cdot( \vec{C} \times \vec{A} ) = %
+        \vec{C}\cdot( \vec{A} \times \vec{B} )%
+    }{%
+        \vec{A} \times ( \vec{B} \times \vec{C} ) = %
+        ( \vec{A}\cdot\vec{C} )\vec{B} - %
+        ( \vec{A}\cdot\vec{B} )\vec{C}
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \vec{\nabla}\cdot( \vec{\nabla} \times \vec{A} ) \,\, = \,\,0\,\,=\,\, %
+        \vec{\nabla} \times ( \vec{\nabla} f )%
+    }{%
+        \vec{\nabla} \times ( \vec{\nabla} \times \vec{A} ) =%
+        \vec{\nabla} ( \vec{\nabla}\cdot\vec{A} ) - \nabla^{2} \vec{A}%
+    }$
+\hrule
+
+$\YgorUD{%
+        \text{Spherical coords}%
+    }{%
+        dV=r^{2}\sin\theta drd\theta d\phi%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \vec{\nabla}t=\partial_{r}[t]\widehat{r}+\frac{1}{r}\partial_{\theta}[t]\widehat{\theta}%
+        +\frac{1}{r\sin\theta} \partial_{\phi}[t] \widehat{\phi}%
+    }{%
+        d\vec{l}=dr\widehat{r}+rd\theta\widehat{\theta}+r\sin\theta d\phi\widehat{\phi}%
+    }$
+
+$\YgorUD{%
+        \nabla^{2}t=\frac{1}{r^{2}}\partial_{r}\left[r^{2}\partial_{r}[t]\right] + %
+        \frac{1}{r^{2}\sin\theta} \partial_{\theta}%
+        \left[\sin\theta\partial_{\theta}[t]\right] + %
+        \frac{1}{r^{2}\sin^{2}\theta}\partial^{2}_{\phi}[t]%
+    }{%
+        \vec{\nabla}\cdot\vec{v}=\frac{1}{r^{2}}\partial_{r}\left[r^{2}v_{r}\right] + %
+        \frac{1}{r\sin\theta} \partial_{\theta}%
+        \left[\sin\theta v_{\theta}\right] + %
+        \frac{1}{r\sin\theta}\partial_{\phi}[v_{\phi}]%
+    }$
+
+$\YgorUD{%
+        \YgorUD{%
+            x=rc \phi s \theta %
+        }{%
+            y=rs \phi s \theta %
+        }%
+    }{%
+        \YgorUD{%
+            z=rc \theta %
+        }{%
+            \phi = \text{atan}(y/x)%
+        }%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \YgorUD{%
+            \widehat{x}=s \theta c \phi \widehat{r} + %
+                    c \theta c \phi \widehat{\theta} - %
+                    s \phi \widehat{\phi}%
+        }{%
+            \widehat{y}=s \theta s \phi \widehat{r} + %
+                    c \theta s \phi \widehat{\theta} + %
+                    c \phi \widehat{\phi}%
+        }%
+    }{%
+        \YgorUD{%
+            \widehat{z}=c \theta \widehat{r} - %
+                s \theta \widehat{\theta}%
+        }{%
+            \theta = \text{atan}(\sqrt{x\cdot x+y\cdot y}/z)%
+        }%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \YgorUD{%
+            \widehat{r}=s \theta c \phi \widehat{x} + %
+                    s \theta s \phi \widehat{y} + %
+                    c \theta \widehat{z}%
+        }{%
+            \widehat{\theta}=c \theta c \phi \widehat{x} + %
+                    c \theta s \phi \widehat{y} - %
+                    s \theta \widehat{z}%
+        }%
+    }{%
+        \YgorUD{%
+            \widehat{\phi}=-s \phi \widehat{x} + c \phi \widehat{y}%
+        }{%
+            r = \sqrt{x\cdot x+y\cdot y+z\cdot z}%
+        }%
+    }$
+\hrule
+
+$\YgorUD{%
+        \text{Cylindrical coords}%
+    }{%
+        dV=r drd\phi dz%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \vec{\nabla}t=\partial_{r}[t]\widehat{r} + %
+        \frac{1}{r}\partial_{\phi}[t]\widehat{\phi} + %
+        \partial_{z}[t] \widehat{z}%
+    }{%
+        d\vec{l}=dr\widehat{r}+rd\phi\widehat{\phi}+dz\widehat{z}%
+    }$
+
+$\YgorUD{%
+        \nabla^{2}t=\frac{1}{r}\partial_{r}\left[r\partial_{r}[t]\right]+ %
+        \frac{1}{r^{2}} \partial^{2}_{\phi}[t] + %
+        \partial^{2}_{z}[t]%
+    }{%
+        \vec{\nabla}\cdot\vec{v}=\frac{1}{r}\partial_{r}\left[rv_{r}\right]+ %
+        \frac{1}{r} \partial_{\phi}[v_{\phi}] + %
+        \partial_{z}[v_{z}]% 
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\cancel{\partial^{2}_{z}}} \text{ for polar/planar}%
+    }{%
+        \,%
+    }$
+
+
+
+$\YgorUD{%
+        x=r c \phi%
+    }{%
+        y=r s \phi %
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        z=z%
+    }{%
+        \widehat{z}=\widehat{z}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \widehat{x}=c \phi \widehat{r} - %
+                s \phi \widehat{\phi}%
+    }{%
+        \widehat{y}=s \phi \widehat{r} + %
+                c \phi \widehat{\phi}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \phi = \text{atan}(y/x)%
+    }{%
+        r = \sqrt{x\cdot x+y\cdot y}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+            \widehat{r}= c \phi \widehat{x} + %
+                     s \phi \widehat{y}%
+    }{%
+            \widehat{\phi}= -s \phi \widehat{x} + %
+                         c \phi \widehat{y}%
+    }$
+
+
+
+\subsection{Delta Function/Distrib.}
+
+$\delta^{d}( \vec{r}) = %
+     \frac{1}{( 2\pi )^{ d}}   \int%
+       e^{i\vec{k}\cdot\vec{r}}  d^{d} k$
+
+
+\subsection{Transforms}
+
+$f ( \vec{r}) =  \frac{1}{  ( 2\pi )^{ d / 2  }} %
+     \smash{\int\limits_{ - \infty}^{\infty}} %
+      F ( \vec{k} )%
+    e^{i\vec{k}\cdot\vec{r}} d^{d} \vec{k}$%
+    \hfill\textbullet\hfill%
+    $F ( \vec{k}) =  \frac{1}{  ( 2\pi )^{ d / 2  }} %
+     \smash{\int\limits_{ - \infty}^{\infty}} %
+      f ( \vec{r})%
+    e^{ -i\vec{k}\cdot\vec{r}} d^{d} \vec{r}$
+
+
+
+\subsection{Combinatorics}
+
+$  \left( \YgorNoCriteria{N}{n} \right)   =  \frac{%
+    \overset{\text{(remaining
+possible)}}{N \cdot( N - 1 )\cdots( N - n + 1 )}}{%
+    \underset{\text{(order unimportant)}}{n!\,\looparrowleft}}   =  %
+    \overset{\text{N choose n}}{\frac{N!}{n!\,(N-n)!}}$
+%
+\hfill\textbullet\hfill%
+%
+    $\sum\limits_{n=0}^{N}   \left( \YgorNoCriteria{N}{n} \right)   =  %
+    2^{N}.$
+
+
+\subsection{Stirling's Approx.}
+
+$n! \approx n^{n} e^{-n} \sqrt{2\pi n} \left(1 + \sfrac{1}{12n}\right) %
+    \hfill \iff n \gg 1$ 
+$n! \approx n^{n} e^{-n} \sqrt{2\pi n} \hfill $%
+     (sqrt sometimes needed)\newline
+$n! \sim n^{n} e^{-n} %
+     \hfill \implies \ln n! \approx n\ln(n)-n $
+
+
+\subsection{Integrals -- $( a , b > 0 )$}
+
+$\YgorUD{%
+        \smash{\int\limits_{ a}^{ b}}   \frac{1}{x}   \sqrt{  ( x - a ) ( b - x )}dx =%
+        \frac{\pi}{2} (  \sqrt{ b}- \sqrt{ a})^{ 2}  %
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{ \int\limits_{ 0}^{ \pi}}    \sin^{2 n  }( x )%
+                           \cos^{2 m  }( x ) dx =%
+        \beta( n +  \frac{1}{2} , m +  \frac{1}{2} )%
+    }{%
+        \,%
+    }$
+\hrule
+
+$\YgorUD{%
+        \smash{\int\limits_{0}^{\infty}}  x^{ n}  e^{ - bx}  dx =%
+        \sfrac{n! }{b^{n + 1}}%
+        \big| n \geq 0%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\int\limits_{\,0}^{\,\infty}}  x^{ n}  e^{ - bx^{2}}  dx = \frac{1}{2} %
+         \frac{\Gamma\left( \sfrac{( n + 1 )}{2} \right)}{b^{\sfrac{( n + 1 )}{2}}}  %
+        \big| n \geq 0%
+    }{%
+        \,%
+    }$
+
+$\YgorUD{%
+        \smash{\int\limits_{\,0}^{\,\infty}}   \frac{x^{n}}{e^{x}-1} dx =%
+        \Gamma ( n + 1 ) \zeta ( n + 1 ) \big| n  \geq  1%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\int}  %
+        \frac{1}{e^{x}+1} dx = - \ln( 1 + e^{-x} )%
+    }{%
+        \,%
+    }$
+
+$\YgorUD{%
+        \smash{\int\limits_{\,0}^{\,\infty}}   %
+        \frac{x^{n}}{e^{x}+1} dx = %
+         (1 - \sfrac{1 }{2^{n}} ) \Gamma( n + 1 ) \zeta( n + 1)%
+        \big| n  \geq  1%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\int\limits_{ - \infty}^{\infty}}   %
+        e^{ - ax^{ 2}}  dx = \frac{1}{2} \sqrt{ \frac{\pi}{a}}%
+    }{%
+        \,%
+    }$
+\hrule
+
+
+$\YgorUD{%
+        \smash{\int\limits_{ - \infty}^{\infty}}   %
+        e^{ - ax^{ 2} - 2bx}  dx = %
+        \frac{1}{2} \sqrt{ \frac{\pi}{a}} e^{\sfrac{b^{2} }{a}}%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\int\limits_{ - \infty}^{\infty}}   %
+        x e^{ - a(x - b)^{2}}  dx = b  \sqrt{ \frac{\pi}{a}}%
+    }{%
+        \,%
+    }$
+
+
+$\YgorUD{%
+        \int_{0}^{2\pi}  \int_{0}^{\pi} %
+         ( \vec{a}\cdot\widehat{r} ) ( \vec{b}\cdot\widehat{r} )%
+        \sin\theta d\theta d\phi =4\pi ( \vec{a}\cdot\vec{b}) / 3%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\int\limits_{ - \infty}^{\infty}}   %
+        x^{2} e^{ - ax^{2}}    dx = %
+        \frac{1}{2}   \sqrt{  \frac{\pi}{a^{3}}}%
+    }{%
+        \,%
+    }$
+
+$\YgorUD{%
+    \int    \frac{R \sin \theta \cos \theta d\theta}{\left( %
+     R^{2}  +  z^{2}  -  2zR\cos \theta \right)^{ \sfrac{3 }{2}}} = %
+    \frac{zR\cos \theta  -  R^{2}  -  z^{2}}{z^{2}  \sqrt{%
+      R^{2}  +  z^{2}  -  2zR \cos \theta}}%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\int\limits_{ a}^{ b}}   %
+        \sqrt{  a^{ 2} - x^{ 2}}dx = \frac{\pi a^{ 2}}{4}%
+    }{%
+        \,%
+    }$
+
+$\YgorUD{%
+        \smash{\int\limits_{ - \infty}^{\infty}} %
+          \frac{x^{m} dx}{( x^{2} + b^{2} )^{ n}} = %
+        \left.\pi%
+        \frac{%
+           \Gamma( n - q ) | b |^{2( q - n )}%
+        }{%
+           \sin( \pi q ) \Gamma( 1 - q ) \Gamma( n )%
+        }\right|%
+        q\equiv \frac{m + 1}{2},\,\, 2n - m > 1,\,\,m \text{ even.}%
+    }{%
+        \,%
+    }$
+
+$\YgorUD{%
+        \smash{\int}   \frac{dx}{( z^{2}  +  x^{2} )^{ \sfrac{3 }{2}}} =%
+        \frac{x}{z^{2}  \sqrt{ z^{2}  +  x^{2}}}%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\int}   \frac{dx}{%
+        \sqrt{z^{2} + x^{2}}} = %
+        \ln\left[x  +  \smash{\sqrt{z^{2}  +  x^{2}}} \right]%
+    }{%
+        \,%
+    }$
+
+$\YgorUD{%
+        \smash{\int\limits_{ a}^{ b}}   %
+        \smash{\sqrt{  \frac{b}{x} - 1}}dx =%
+        b\left( \frac{\pi}{2} - \arcsin \sqrt{ \frac{a}{b}}%
+          \right) - \sqrt{ a( b - a )}%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\int\limits_{ 0}^{ \infty}}   %
+        e^{ - ar}  \sin ( br )dr = \frac{b}{b^{2} + a^{2}}%
+    }{%
+        \,%
+    }$
+
+$\YgorUD{%
+        \smash{\int\limits_{ 0}^{ \infty}}   %
+        \frac{1}{r}  \sin ( \pm | b | r )dr = %
+        \pm\pi / 2%
+    }{%
+        \,%
+    }$
+
+
+\subsection{Misc}
+
+$\YgorUD{%
+        \Gamma ( 1 )=1%
+    }{%
+        \Gamma ( \frac{1}{2} )= \sqrt{ \pi}%
+    }$\hfill\textbullet\hfill %
+    $\YgorUD{%
+        \Gamma ( n )=( n - 1 )!%
+    }{%
+        \zeta ( 2 )=\pi^{ 2} / 6%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \zeta ( 3 )\approx 1.202%
+    }{%
+        \zeta ( 4 )=\pi^{ 4} / 90%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \beta ( \frac{1}{2} ,\frac{1}{2} )=\pi%
+    }{%
+        \beta ( \frac{1}{2} ,\frac{3}{2} )=\frac{\pi}{2}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \beta ( \frac{1}{2} ,\frac{5}{2} )=\frac{3\pi}{8}%
+    }{%
+        \beta ( \frac{3}{2} ,\frac{3}{2} )=\frac{\pi}{8}%
+    }$%
+
+$\YgorUD{%
+        \Gamma ( x )  = ( x - 1 )\Gamma ( x - 1 ) =%
+        \smash{\int_{ 0}^{ \infty}}  t^{x - 1 } e^{ - t}  dt%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \beta ( x ,y ) = \beta ( y ,x ) = %
+        \Gamma ( x )\Gamma ( y ) / \Gamma ( x + y )%
+    }{%
+        \,%
+    }$
+
+
+%%%%%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%%%%%
+\section{Classical Mech.}
+
+$\YgorUD{%
+        \vec{F}  =  \frac{Gm_{1}m_{2}}{-\rcurs^{2}}\widehat{\rcurs}%
+    }{%
+        \vec{L}  =  \partial_{t}\vec{\tau}=\vec{r}\times\vec{p}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \vec{R}  =  \frac{m_{ 1}\vec{r}_{ 1}  +  m_{ 2}\vec{r}_{ 2}}{%
+                        m_{ 1}  +  m_{ 2}}%
+    }{%
+        \vec{\tau}  =  \vec{r}\times\vec{F}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \mu  =  \frac{m_{ 1}  m_{ 2}}{%
+                        m_{ 1}  +  m_{ 2}}%
+    }{%
+        \vec{r}  =  \vec{r}_{ 1}  -  \vec{r}_{ 2}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        s^{2}  =  x^{2}  +  y^{2}\phantom{\big|}%
+    }{%
+        ds  =  \smash{\sqrt{1 + ( \partial_{x} y )^{ 2}}}dx%
+    }$
+
+$\YgorUD{%
+        \frac{\partial \mathcal{L}}{\partial q_{i}}  = %
+        \frac{d}{dt} \frac{\partial \mathcal{L}}{\partial [  \partial_{t} q_{i} ]}%
+    }{%
+        \text{Conserv. F's.,}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \mathcal{L} = T - V = \frac{m}{2}  ( \partial_{t} \vec{r} )^{2}%
+         -  V ( \vec{r})%
+    }{%
+        \text{\& Inertial Frm.}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+         T  =  \frac{m}{2}  [ ( \partial_{t} \vec{r} )^{2}  + %
+             r^{2} ( \partial_{t} \phi )^{2} ]%
+    }{%
+        \text{Polar Kinetic.}%
+    }$
+
+
+\subsection{Pendulum}
+
+Project $\vec{F}_{g}$ along $\widehat{T}$ to
+cancel $\smash{\left( \widehat{T}  \perp  \widehat{\theta}\right)}$. 
+Now $F_{\text{net}} = -mg\sin{\theta} \approx -mg\theta.$ So $ma=-mg\theta.$ Since
+$s=L\theta,$ solve $\ddot \theta   =   -\frac{g}{L} \theta$%
+    \hfill$\rightarrow$\hfill%
+$\theta(t) = A\sin(\sqrt{\sfrac{g }{L}}t) +%
+             B\cos(\sqrt{\sfrac{g }{L}}t).$ 
+Then, $f=\frac{\omega}{2\pi} = \smash{\frac{1}{2\omega}\sqrt{\sfrac{g }{L}}}$ and
+$T=2\pi\sqrt{\sfrac{L }{g}}$.
+
+
+\subsection{Light Interference: $A\cos( kr + \omega t )$}
+
+$\YgorUD{%
+        \text{Double slit:}%
+    }{%
+        \text{$\sim 2$ point sources}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        ( I=2A ) \text{max: }%
+        \sin\theta = n\lambda / d \Leftrightarrow n=0, \pm 1, \pm 2,..%
+    }{%
+        ( I=0 ) \text{min: }%
+        \sin\theta = n\lambda / 2d \Leftrightarrow n=\pm 1, \pm 2,..%
+    }$
+
+$\YgorUD{%
+        \text{Single slit:}%
+    }{%
+        \text{$d=$ slit width}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        ( I=0 ) \text{min: }%
+        \sin\theta = n\lambda / d \Leftrightarrow n=\pm 1, \pm 2,..%
+    }{%
+        \text{General: }%
+        I( \theta ) = A( j_{0} (d\pi\sin( \theta ) / \lambda ) )^{ 2}%
+    }$
+
+
+\subsection{Special Relativity}
+
+$T= [ \gamma( v ) - 1 ]mc^{2}$\hfill\textbullet\hfill%
+    $\gamma( v ) = 1 / \sqrt{ 1 - v^{2} / c^{2} }$
+
+
+$\smash{f_{ obs} = f_{ stat} / ( \gamma( v )
+( 1 - \vec{v} \cdot \widehat{d} / c ) )}$ with %
+$\smash{\widehat{v}\cdot\widehat{d} = \cos\theta}.$
+
+
+\subsection{Scattering}
+
+\textbf{Compton:} ( $\gamma + $\Neutral$ \rightarrow   \gamma'  + $\Male)
+Inelastic, but $\sim$elastic.
+
+1) $E$-cons.: $mc^{2}  +  \frac{hc}{\lambda}  = %
+    \frac{hc}{\lambda'}  +  \sqrt{m^{2}c^{4} + p^{2}_{m'}c^{2}}$.
+
+2) $P$-cons.: $\vec{p}_{\gamma}  +  \cancel{\vec{p}_{m}}  =  %
+    \vec{p}_{\gamma'}  +  \vec{p}_{m'}$. Isolate $\vec{p}_{m'}$, square. 
+
+Substitute for $\vec{p}_{m'}$: 
+    $\left. \lambda'   -   \lambda  = %
+    2\frac{h}{mc}\sin^{2}  \left( \frac{\theta}{2} \right)
+    \right| 
+     \theta  \leftarrow  \vec{p}_{\gamma}  \cdot \vec{p}_{\gamma'}$.
+
+\textbf{Thompson:} Compton, $E_{\gamma}   \ll   mc^{2}$. 
+    (Elastic:  \Neutral $\rightarrow  $ \Neutral ).
+
+\textbf{Hard-sphere:} 
+$\frac{d\sigma}{d\Omega}   =   \frac{R^{2}}{4} %
+    \Rightarrow \sigma  =  %
+    \frac{R^{2}}{4}  \int \sin \theta d\theta d\phi %
+     =  \pi R^{2}  .$
+
+\textbf{Rutherford:} (\Male$+$\Neutral$\rightarrow$\Male+\Neutral). 
+Elastic, Heavy target, Coulomb. 
+$\left. \frac{d\sigma}{d\Omega}  = %
+    \frac{%
+        (q_{1}q_{2})^{2}%
+    }{%
+        (16 \pi \epsilon_{ \circ} T \sin^{2} \frac{\theta}{2})^{2}%
+    }%
+ \right| \underset{%
+        \text{(incoming kinetic)}%
+    }{%
+        T = mc^{2}( \gamma - 1 ).%
+    }$
+
+
+
+%%%%%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%%%%%
+\section{Thermo./Stat.\ Mech.}
+
+%\begin{tabular}{@{}l@{}}
+%
+%The laws. \\
+%
+\textbf{1}. %
+ $\Delta U = \overset{\text{heat}}{Q} + \overset{\text{work}}{W}%
+      $\hfill\textbullet\hfill$%
+      W = \int_{V_{i}}^{V_{f}} \overset{\text{compression}}{P(V) dV}  +%
+        \overset{\text{(other)}}{W_{o}}$
+
+\textbf{2}. %
+  $S \equiv k_{ B} \ln\Omega$ \underline{grows}. Equilib.\ 
+     $ \Rightarrow  \frac{\partial S}{\partial ...}   =  0$
+\{N ,U ,V ,...\}.
+
+\textbf{3}. %
+ $T   \rightarrow   0  \Rightarrow $ %
+    $C_{ V}   \rightarrow   0$; %
+    $dS  \rightsquigarrow  0$ %
+    {\tiny ($S   \neq   0$ b / c of $\Delta  E   =   0$ config.s!)}
+\hrule
+$dU  =  TdS  -  PdV  + \sum_{i} \mu_{i} dN_{i}.$\hfill% 
+\textbf{Thermo.\ Identity.}
+
+$\frac{1}{T}  =  %
+      \left(  \frac{\partial S}{\partial U}   \right)_{V,N_{i}}    $%
+  \hfill\textbullet\hfill%
+  $\frac{P}{T}  =  %
+      \left(  \frac{\partial S}{\partial V}   \right)_{U,N_{i}}    $%
+  \hfill\textbullet\hfill%
+  $\frac{\mu_{i}}{T}  =  %
+      - \left(  \frac{\partial S}{\partial N_{i}}   \right)_{U,V}  $
+
+
+\hrule
+$H = U + PV.$ Enthalpy: $E_{\text{assemble}}$ \& put in enviro.
+\hrule
+%
+\textbf{Reversible} $dV  \Rightarrow$ \textbf{quasistatic}. (Note:
+$\xcancel{\Longleftrightarrow}$ !) %
+%
+\textbullet\, %
+$Q  \neq  0 \Rightarrow$ \textbf{irreversible}. 
+But if $\Delta T   \rightarrow  0$ then $\Delta S  \approx  0$ so ``infinitesimal''
+$Q$ is $\sim$reversible. \textbullet\,\,%
+  \textbf{Quasistatic} $\Rightarrow dS  =  \frac{Q}{T};$ if
+$dV = dN = 0$ then: %
+    \hfill$\Delta S =  \int_{T_{i}}^{T_{f}}  \frac{C_{V}}{T} dT$.
+
+If $dN = 0$ and $W = -PdV$ then: %
+    \hfill$\Delta S =  \int_{T_{i}}^{T_{f}}  \frac{C_{P}}{T} dT$.
+ 
+
+
+\subsection{Degrees of Freedom \textSq{f}}
+
+[Total at STP]=(trans, rot, spring\{-vib, -pot\}). 
+Spring DOF are `frozen out' in gases at STP.
+%
+Monatomic gas [He, Ar] \textSq{3}=(3,0,\{0,0\}).
+%
+Diatomic gas [O$_{2}$, N$_{2}$, CO] \textSq{5}=(3,2,\{1,1\}).
+%
+Polyatomic (>2) gases: linear [CO$_{2}$] \textSq{5}=(3,2,\{4,4\}),
+%
+nonlinear [NO$_{2}$, H$_{2}$O] \textSq{6}=(3,3,\{3,3\}).
+%
+Elemental solids [Al, Pb] \textSq{6}=(0,0,\{3,3\}).
+%
+Einstein solids \textSq{2}=(0,0,\{1,1\})/osc..
+%
+Adiabatic exponent: $\gamma \equiv 1 + \sfrac{2}{f}.$
+
+
+\subsection{Equipartition Theorem}
+
+At temp.\ $T$ the avg.\ energy of \emph{any} quadratic DOF is 
+$\frac{1}{2} k_{B} T$. For $N$ entities with \textbf{only} $f$ quadratic DOF each:
+$U_{\text{thermal}} = N f \frac{1}{2} k_{B} T$.  
+
+
+\subsection{Ideal Gas}
+
+$PV  = nRT  =  Nk_{ B} T$ (Hard indist.\ spheres; low $\rho_{N}$; elastic
+coll's)\quad\textbullet\quad%
+    $U  =  N   f  \frac{1}{2}  k_{ B}  T$%
+    \quad\textbullet\quad%
+    $C_{ P}  =  C_{ V}   +  k_{ B} N .$
+\hrule
+
+% NOTE: The region of validity is when the ln's argument is >>1. This is tied to
+% the De Broglie Thermal Wavelength. It implies this equation is ONLY valid for
+% the Boltzmann-Maxwell ("classically distinguishable" (?)) limit. Not sure if
+% this needs to be stated or not. See 
+% http://en.wikipedia.org/wiki/Sackur%E2%80%93Tetrode_equation and
+% http://en.wikipedia.org/wiki/Thermal_wavelength
+%
+%
+$\left. S( N, V, U )  =  Nk_{B}   \left[ %
+    \ln  \left(  %
+      \frac{V}{N}%
+        \left(  \frac{4 \pi m U}{3 N h^{2}}  \right)^{  \frac{3}{2}}%
+     \right)   +  \frac{5}{2} \right] 
+    \hfill\right|$ monatomic. 
+
+
+$\YgorUD{%
+        \mu =  - k_{ B} T \ln  \left[ \frac{V}{N}%
+          \left( \frac{4\pi m U}{3h^{2}N} \right)^{  \frac{3}{2}} %
+         \right]  +  \cancel{mgz}%
+    }{\,}$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        Z_{\text{tr}} ( T  , N = 1 ) = V \left(  \frac{%
+        2\pi m}{h^{2}\beta}  \right)^{  3 / 2}  =\frac{V}{l_{ Q}^{3}}%
+        =\frac{V}{v_{ Q}}%
+    }{\,}$
+
+%\hfill\textbullet\hfill%
+    $\YgorUD{%
+        Z ( T  , V  , N )  =  \frac{1}{N!}%
+        [ Z_{ 1} ( T  , V ) ]^{ N}  = %
+        \frac{1}{N!}%
+        [ Z_{ \text{int}} ( T ) Z_{ \text{tr}} ( T  , N = 1 ) ]^{ N}%
+    }{\,}$
+
+%
+$\overset{\text{mixing gases }b \&
+c\quad\quad\quad\quad\quad\quad}{\Delta S   =   - N  k_{ B}%
+      \left(   \frac{N_{ b}}{N} %
+          \ln  \left(  \frac{N_{ b}}{N}  \right)%
+      +   \frac{N_{ c}}{N} %
+          \ln  \left(  \frac{N_{ c}}{N}  \right)%
+      \right) }%
+  \Big| \YgorNoCriteria{\text{monatomic\textbullet} P_{b}  =  P_{c}}{%
+    T_{b}  =  T_{c}%
+    \text{\textbullet}%
+    N_{b}  +  N_{c}  =  N}$
+
+\hrule
+
+\textbf{Free Expansion}  ( Quasistatic+irreversible+vacuum )
+$\Delta U  =  \cancel{Q}  +  \cancel{W}  =  0.$ But 
+    $\Delta S  =  N k_{B} \ln\frac{V_{f}}{V_{i}} %
+    (\neq  0, \neq  \frac{Q}{T})$.
+\hrule
+
+\textbf{Isothermal}  ( Quasistatic+slow+thermal equil. )
+$\Delta T  =  0 \Rightarrow \cancel{\Delta U}  =  %
+    Q  +  W  =  0$%
+    \hfill\textbullet\hfill%
+    $\partial ( \frac{PV}{N} )  =  0$%
+    \hfill\textbullet\hfill%
+    $\Delta S  =  \frac{Q}{T}$
+
+If $\Delta N = 0$ then $W_{\text{comp.}} = N k_{B} T \ln{\sfrac{V_{i}}{V_{f}}}.$
+\hrule
+
+\textbf{Adiabatic}  ( Fast+$\xcancel{\text{quasistatic}}$ )
+$\Delta U  =  \cancel{Q}  +  W$%
+    \hfill\textbullet\hfill%
+    $\Delta S  \neq  0$
+ 
+
+If $\Delta N = 0$ then 
+  $\partial (V T^{\sfrac{f}{2}}) = 0$, 
+  $\partial (V^{\gamma} P) = 0$, and 
+  $W_{\text{comp.}} = \frac{f}{2} (P_{f} V_{f} - P_{i} V_{i}).$
+\hrule
+
+\textbf{Isentropic} {\tiny  ( Adiabatic+Quasistatic )
+$\Delta S  =  \frac{\cancel{Q}}{T}  =  0$. Reversible. }
+\hrule
+
+$v_{\text{rms}}$ = $\sqrt{\overline{v^{2}}} = %
+    \sqrt{\sfrac{3k_{B}T}{\overline{m}}}$ from toy piston/$P_{\text{wall}}$.
+$c_{\text{sound}}$ = $\sqrt{\frac{-V}{\rho_{m}} %
+    \smash{ \frac{\partial P}{\partial V} } } = %
+    \sqrt{\sfrac{\gamma k_{B} T}{\overline{m}}}$ [Adiabatic;
+expand $\partial (PV^{\gamma}) = 0$, rearrange for bulk modulus.]
+
+
+\subsection{Heat (Energy) Capacity}
+
+$C \equiv \frac{Q}{\Delta T} =%
+    \frac{\Delta U - W}{\Delta T}$\hfill\textbullet\hfill%
+    $c  \equiv  \frac{C}{m}$\hfill\textbullet\hfill%
+    $C_{V}  =  \left. \frac{\partial U}{\partial T} \right|_{ V,N,W}$
+
+$C_{P} = \left. \frac{\partial H}{\partial T}\right|_{ P}  =%
+    \left. \frac{\partial U}{\partial T} \right|_{ P}    + %
+    P  \left. \frac{\partial V}{\partial T} \right|_{ P}    -  %
+    \left. \frac{\partial W_{o}}{\partial T} \right|_{ P}$%
+    \hfill\textbullet\hfill%
+    $L \equiv  \left. \frac{Q}{m} \right|_{ P,W}$
+
+
+\subsection{Virial Expansion / Van der Waals}
+
+$PV=nRT\left(1 + \sfrac{B ( T ) }{( \sfrac{V }{n} )}%
+               + \sfrac{C ( T ) }{( \sfrac{V }{n} )^{2}}%
+               + \ldots \right)$
+\hrule
+
+
+Qual.\ OK for gases, dense fluids.
+$a:$ intermolecular attr., $b:$ occupied $V$ \textbullet
+$\left( P  +  \smash{\sfrac{an^{ 2} }{V^{ 2}}}  \right)( V  -  nb )
+= nRT$
+
+
+
+\subsection{2-State Paramagnet $\sim$ Spin $\sfrac{1}{2}$}
+
+$\sim$ Coins.\hfill\textbullet\hfill%
+    $\vec{B} \,||\, \widehat{z}$\hfill\textbullet\hfill%
+    $\smash{\overset{\text{(symmetric!)}}{\Omega(N,N_{\uparrow})  =  }} %
+    \left( \YgorNoCriteria{N}{N_{\uparrow}} \right) $%
+    \hfill\textbullet\hfill%
+    $\Omega_{\text{total}} = 2^{N}$
+
+$\Omega  \approx  \frac{%
+    \left( 1+\,\sfrac{ N_{ \downarrow} }{ N_{ \uparrow}}%
+       \right)^{ N_{ \uparrow}}  %
+    \left( 1+\,\sfrac{ N_{ \uparrow} }{ N_{ \downarrow}}%
+       \right)^{ N_{ \downarrow}}%
+  }{%
+    \sqrt{2\pi N}%
+  }$
+\hfill$\Rightarrow$\hfill
+$\left. \Omega  \approx  %
+    \left( \frac{eN}{ N_{ \uparrow}} \right)^{  N_{ \uparrow}}%
+     \right|%
+     \overset{%
+          (N_{ \uparrow} \leftrightarrows N_{ \downarrow} \text{ok}) %
+        }{%
+          N_{ \downarrow} \gg  N_{ \uparrow}  \gg 1
+        }$
+
+$\YgorUD{%
+        S( U ,B ,N ) = -Nk_{ B} \left[ \frac{1 - z}{2} %
+        \ln\left(  \frac{1 - z}{2}  \right)  + %
+        \frac{1 + z}{2} \ln\left(  \frac{1 + z}{2}  \right)%
+         \right]%
+        \text{\textbullet}%
+        \frac{1}{T}=\frac{k_{ B}}{2\mu%
+        B} \ln \left(  \frac{1 - z}{1 + z}  \right)%
+    }{%
+        \YgorUD{U = \mu B ( N_{ \downarrow} - N_{ \uparrow} )%
+        }{      \YgorUD{M = \mu ( N_{ \uparrow} - N_{ \downarrow} )%
+                }{      U ( T , B ) = - B M ( T , B )}%
+        }%
+        \text{\textbullet}%
+        \YgorUD{z = \sfrac{U }{( N\mu B )}
+        }{\, }%
+        \text{\textbullet}%
+        \YgorUD{U ( T , B ) = - N\mu B \tanh \left( %
+                \sfrac{\mu  B}{k_{ B} T} \right)%
+        }{      C_{ B} = Nk_{ B} \left(  \frac{\mu %
+                B}{k_{ B}T}  \right)^{ 2}   / \cosh^{ 2}  \left(%
+                  \frac{\mu B}{k_{ B}T} \right)%
+        }%
+    }$
+
+
+\subsection{Einstein Solid}
+$N$ indep.\ oscil.'s, $q$ quanta total: $N$ bins \& $q$ stars.
+
+$\,\YgorRCriteria{\text{%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{$\blacksquare$}%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{$\blacksquare$}%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{$\blacksquare$}%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{Q}%
+}\rightarrow(1,1,1,2)}{\underset{\text{\ldots\ldots\ldots}}{\text{%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{$\blacksquare$}%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{$\blacksquare$}%
+  \makebox[2ex]{Q}%
+  \makebox[2ex]{$\blacksquare$}%
+}\rightarrow(1,3,1,0)}}%
+\,\YgorLCriteria{\text{%
+  \makebox[20ex]{%
+    $\blacksquare$ = bin dividers,%
+  }%
+}}{\underset{\text{choose $q$ to be quanta.}}{\text{%
+  \makebox[20ex]{%
+    $q   +   (N   -   1)$ symbols,%
+  }%
+}}}$
+
+\begin{tabular}{@{}l@{\,\,\textbullet\,\,}@{}l@{}@{\,\,\textbullet\,\,}l@{}}
+%
+$\Omega(N,q) = \left( \YgorNoCriteria{q   +   N   -   1}{q} \right) $ &
+%    
+$\YgorNoCriteria{%
+   E_{\springandmass}   =   \hbar \omega (n   +   \frac{1}{2}) }{% 
+   U   =   \hbar \omega (q   +   \cancel{\frac{N}{2}}) }$ &
+%
+$\YgorNoCriteria{ V   =   \frac{1}{2}k_{s} x^{2} }{%
+    \omega   =   \sqrt{\frac{k_{s}}{m}}}$ \\
+%
+\end{tabular}
+
+\begin{tabular}{@{}l@{\,\,$\rightthreetimes$\,\,}@{}l@{}}
+%
+$\YgorNoCriteria{%
+    \ln\Omega  \approx %
+    \ln  \left(  1  + \frac{N}{q}  \right)^{ q}%
+       + %
+    \ln \left( 1  + \frac{q}{N} \right)^{ N}%
+        +  ...%
+}{
+    \Omega \left. \approx  %
+    \frac{%
+      \left( 1 + \sfrac{N }{q} \right)^{q}  %
+      \left( 1 +\sfrac{q}{ N} \right)^{N}%
+    }{%
+      \sqrt{2 \pi q (q+N)/N}%
+    }%
+    \right| q,N  \gg  1%
+}$ &
+%
+$\YgorNoCriteria{%
+    \Omega \left. \approx  \left( \frac{eq}{N} \right)^{ N} \right|%
+    \overset{\text{high-}T}{ q \gg  N  \gg 1}
+}{
+    \Omega \left. \approx  \left(  \frac{eN}{q}  \right)^{ q} \right|%
+    \underset{\text{low-}T}{ N  \gg q \gg 1}
+}$ \\
+\end{tabular}
+\hrule
+
+$\mu  \approx  - k_{ B}  T \log( 1  + \sfrac{q }{ N} )$.
+
+\hrule
+High-$T$: $U  \approx  N k_{ B} T$%
+    \,\textbullet\,%
+    $C_{V}  \approx  N k_{ B}$
+
+Low-$T$: $U  \approx  %
+    \hbar \omega N e^{  \sfrac{-  \hbar\omega }{k_{ B}  T}}$%
+    \hfill\textbullet\hfill%
+    $C_{ V}  \approx  N k_{ B}   \left(  \frac{%
+       \hbar\omega}{k_{ B} T}  \right)^{  2}%
+          e^{  \sfrac{-  \hbar\omega }{k_{ B}  T}}$
+
+
+\subsection{Barometric Eqn.}
+
+Air slab: $dz$ thick, $\overline{m}$ avg.\ molecule mass:
+
+$\frac{dP}{dz} =  \frac{N \overline{m} g}{-V} %
+     \hfill      \overset{\text{ideal gas}}{\Longrightarrow}      \hfill%
+     \frac{dP}{dz} = \frac{- \overline{m} g}{k_{ B} T} P \Rightarrow%
+    N ( z )  =  N_{o} e^{ \frac{\overline{m} g z}{-  k_{ B} T}}$
+
+
+
+\subsection{Heat Eqn.}
+
+$\left.\partial_{t} T = K \nabla^{2}T \,\right|\, K =%
+ \frac{m k_{T}}{\rho_{m} C}$ \textbf{\&} $T(\vec{r};0)=g(\vec{r}).$
+
+$T(\vec{r};t) = \frac{1}{(4 \pi K t)^{\sfrac{n}{2}}} %
+    \int_{\mathds{R}^{n}}%
+    e^{\sfrac{-\rcurs^{2}}{4 K t}}%
+    g\left(\vec{r}'\right) d \vec{r}'$
+
+
+
+\subsection{Partition Functions}
+
+$\YgorUD{%
+        \text{Bltzmn/Can'cl}%
+    }{%
+        \mathcal{P} ( s )=\frac{1}{Z}%
+        e^{ - E ( s ) \beta}
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \text{Gibbs/Grnd can'cl}%
+    }{%
+        \mathcal{P} ( r , N )=\frac{1}{\mathcal{Z}}%
+        e^{ - ( E ( r , N ) - \mu N ) \beta}
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        ( r , N ) \rightarrow \text{r$^{\text{th}}$ state of}%
+    }{%
+        \text{sys.\ of $N$ particles.}%
+    }$
+
+$Z ( T )=\sum_{ s}  e^{ - \beta  E ( s )}$%
+    \hfill\textbullet\hfill%
+    $F ( T )= - k_{ B} T  \ln ( Z ( T ) )$
+    \hfill\textbullet\hfill%
+    $\langle  E  \rangle = -\partial_{\beta}  [\ln Z] $%
+
+$\langle  Q  \rangle = \sum_{ s} \mathcal{P}_{s}  Q ( s )   =  %
+    \frac{1}{Z} \sum_{ s}  Q ( s )  e^{ - \beta  E ( s )}$%
+    \hfill\textbullet\hfill%
+    $\sigma^{2}_{ E} = \partial_{\beta}^{2} [\ln Z] $%
+
+$\mathcal{Z} ( T , \mu )=\sum_{( r , N )}%
+     e^{ - ( E ( r , N ) - \mu N ) \beta} = %
+    \sum_{N} \smash{ \left(  e^{ \beta \mu}  \right)^{  N}} %
+    Z ( T , V , N )$
+
+\hrule
+    
+Maxwell speed: $\mathcal{D} ( v ) dv = ( 4\pi v^{ 2} ) %
+       \smash{\left(  \frac{m\beta}{2\pi}  \right)^{ 3 / 2}}   %
+       e^{ -\beta m v^{ 2}  / 2}  dv$
+
+Most prob'bl: $v_{p}  =   \smash{\sqrt{ \frac{2k_{ B} T}{m}}}$%
+    \hfill\textbullet\hfill%
+    $\langle  v \rangle  =  2v_{p} / \sqrt{ \pi}$%
+    \hfill\textbullet\hfill%
+    $v_{\text{rms}}  =  v_{p} \sqrt{ 3 / 2}$
+
+Maxwell velocity: $\mathcal{D}^{ ( 3 )} ( v ) d^{3} \vec{v} = %
+       \smash{\left(  \frac{m\beta}{2\pi}  \right)^{ 3 / 2}}   %
+       e^{ -\beta m v^{ 2}  / 2}   d^{3} \vec{v}$
+\hrule
+
+$\YgorUD{%
+            \text{Ideal quantum gas}%
+        }{%
+            \mathcal{Z} ( T  ,\mu )=\Pi_{i = 1}^{\infty} %
+            \mathcal{Z}_{i} ( T  , V , \mu )   %
+    }   $\hfill\textbullet\hfill%
+    $   \YgorUD{%
+            \mathcal{Z}_{i} ( T , \mu )=\mathcal{Z} ( \epsilon_{ i} , T  ,\mu )%
+        }{%
+            \mathcal{Z} ( \epsilon_{ i} , T  ,\mu )=%
+            \sum_{ n}  e^{ - \beta( \epsilon_{ i} - \mu )n}%
+    }    $\hfill\textbullet\hfill%
+    $  \YgorUD{\mathcal{P} ( \epsilon_{ i} , n )=}{%
+            \mathcal{P}_{ i} ( n )=%
+            \smash{\frac{e^{ - \beta( \epsilon_{ i} - \mu )n}}{%
+            \mathcal{Z} ( \epsilon_{ i} , T  ,\mu )}}%
+    }$
+
+
+$\YgorUD{%
+        \text{\underline{Fermi-Dirac}: n=0,1}\rightarrow%
+        \mathcal{Z} ( \epsilon , T  ,\mu )=%
+        1 + e^{  - \beta( \epsilon - \mu )}%
+        \rightarrow%
+        \langle n \rangle ( \epsilon , T  ,\mu )=%
+        \smash{\frac{1}{ e^{ + \beta( \epsilon - \mu )} + 1 }} %
+     }{\,}$
+
+$\YgorUD{%
+        \text{\underline{Bose-Ein}: n=0,1,...}\rightarrow%
+        \mathcal{Z} ( \epsilon , T  ,\mu )=%
+        \smash{\frac{1}{ 1 - e^{  - \beta( \epsilon - \mu )} }} %
+        \rightarrow%
+        \langle n \rangle ( \epsilon , T  ,\mu )=%
+        \smash{\frac{1}{ e^{  + \beta( \epsilon - \mu )} - 1 }} %
+     }{\,}$
+\hrule
+
+
+$\underset{\text{One part'cl in a box}}{%
+    E ( \vec{k} )  =  \frac{\hbar^{ 2}  k^{ 2}}{2m} \Rightarrow
+    k_{ x}  =  \frac{2 \pi  n_{ x}}{L}}$%
+    \hfill\textbullet\hfill%
+    $\sum\limits_{n_{ x} , n_{ y} , n_{ z}}       ... =%
+     \sum\limits_{\vec{k}}   ... \rightarrow %
+     \left(  \frac{L}{2\pi}  \right)^{ 3}   \int   d^{3} \vec{k}  %
+     ...$
+
+\hrule
+
+D.O.S's: $\sum_{i} f ( \epsilon_{ i} ) = \sum_{\text{spin}}\sum_{\vec{k}}%
+         f ( \epsilon ( \vec{k} ) ) \rightarrow \int_{0}^{\infty}%
+         g ( \epsilon ) f ( \epsilon ) d\epsilon$
+
+BE: $g ( \epsilon )  =  \alpha  V   \sqrt{ \epsilon} / 2$%
+    \textbullet%
+    FD: $g ( \epsilon )  =  \alpha  V   \sqrt{ \epsilon}$%
+    \textbullet%
+    $\alpha  =  4\pi ( 2m / h^{2} )^{ 3 / 2}$.
+
+$N=\int_{0}^{\infty} \langle n \rangle ( \epsilon ) g ( \epsilon )%
+    d\epsilon$\textbullet%
+    $U=\int_{0}^{\infty} \epsilon \langle n \rangle ( \epsilon )%
+    g ( \epsilon ) d\epsilon$
+
+\hrule
+
+Fermi gas@ T = 0:%
+    \textbullet%
+    $\epsilon_{ F} =\mu ( T  =  0 )$%
+    \textbullet%
+    $k_{ F}^{3}  =  3 \pi^{ 2}  n$%
+    %\hfill\textbullet\hfill%
+
+    $n  =  2\alpha \epsilon_{ F}^{ 3 / 2} / 3$%
+    \textbullet%
+    $\frac{U}{N}  =  3\epsilon_{ F} / 5$%
+    \textbullet%
+    $PV = 2U / 3$
+\hrule
+
+Black body%
+    \hfill\textbullet\hfill%
+    $\mu = 0$%
+    \hfill\textbullet\hfill%
+    $\smash{\sum\limits_{\text{polariz}}   \sum\limits_{\vec{k}}  \rightarrow %
+    2  \left(  \frac{L}{2\pi}  \right)^{ 3}  \int  d^{3} \vec{k}%
+     \rightarrow  \frac{V}{\pi^{2} c^{ 3}} \int\limits_{0}^{\infty}   %
+    \omega^{2} d\omega}$
+
+$\smash{\frac{U}{V}}  = \smash{\int\limits_{0}^{\infty}}   %
+    u_{\omega} ( \omega ,  T ) d\omega  = %
+    \int\limits_{0}^{\infty}   %
+    u ( \epsilon ,  T )d\epsilon$%
+    \hfill\textbullet\hfill%
+    $\epsilon = \hbar\omega$%
+    \hfill\textbullet\hfill%
+    $u_{\omega} ( \omega ,  T )  = \frac{1}{\pi^{2} c^{3}}%
+    \frac{\hbar \omega^{3}}{e^{\beta \hbar \omega}  -  1}$
+
+$u ( \epsilon ,  T )  =  \frac{1}{\pi^{2} ( \hbar c )^{3}}%
+    \smash{\frac{\epsilon^{3}}{e^{\beta \epsilon} - 1}}$%
+    \hfill\textbullet\hfill%
+    $\hbar\omega_{\text{max}}  \approx  2.82 k_{ B} T$%
+    \hfill\textbullet\hfill%
+    $U = \frac{4\sigma_{ B}}{c} V T^{ 4}$%
+
+$S = \frac{16\sigma_{ B}}{3c} V T^{ 3}$%
+    \hfill\textbullet\hfill%
+    $PV = U / 3$%
+    \hfill\textbullet\hfill%
+    Rad.E-flux: $e \sigma_{ B}T^{ 4}$    
+
+\hrule
+
+Debye%
+    \hfill\textbullet\hfill%
+    $\smash{\sum\limits_{\text{polariz}}^{\text{phon}}    %
+    \sum\limits_{\vec{k}}^{\,BZ}  \rightarrow %
+    \frac{9N}{\omega_{ D}^{3}}  \int\limits_{0}^{\omega_{ D}}  %
+    d\omega \omega^{2}...}$%
+    \hfill\textbullet\hfill%
+    $\omega_{ D}^{3}  = \frac{k_{ B}^{ 3} T_{ D}^{ 3}}{\hbar^{3}} = %
+    \frac{6\pi^{ 2} N v_{ s}^{ 3}}{V}$
+    
+$U  =  \frac{9N}{\omega_{ D}^{3}}   \int\limits_{0}^{\omega_{ D}}   %
+    \frac{\hbar\omega^{ 3} d\omega}{e^{ \beta\hbar\omega}  - 1}%
+      =  %
+     \frac{9N ( k_{ B} T )^{ 4}}{( k_{ B} T_{  D} )^{ 3}}%
+       \int\limits_{0}^{T_{  D} / T}     %
+    \frac{x^{3} dx}{e^{ x} - 1}$%
+    \hfill\textbullet\hfill%
+    $C_{ V} =  \frac{9N k_{ B} T^{ 3}}{T_{  D}^{ 3}}%
+       \int\limits_{0}^{T_{  D} / T}     %
+    \frac{x^{3} e^{x} dx}{( e^{ x} - 1 )^{ 2}}$
+\hrule
+
+$\smash{\overset{T < T_{ c}}{\text{BEC}}}$   %
+    \hfill\textbullet\hfill%
+    $ \frac{N}{V} =  \frac{2}{\sqrt{ \pi}}  \left[  \frac{2 \pi m k_{ B} T_{ c}}{%
+    h^{2}}  \right]^{  \frac{3}{2}}  %
+     \int\limits_{0}^{\infty}   %
+    \frac{\sqrt{ x}dx}{e^{ x} - 1}  $%
+    \hfill\textbullet\hfill%
+    $ \frac{N_{ \text{norm}}}{N}  = %
+     \left[  \frac{T_{ c}}{T}  \right]^{  \frac{3}{2}}    $%
+    \hfill\textbullet\hfill%
+    $ \frac{N_{ \text{cond}}}{N}  = %
+     1  -  \left[  \frac{T_{ c}}{T}  \right]^{  \frac{3}{2}}  $%
+
+$U = \gamma N k_{ B} T  \smash{%
+    \left[  \frac{T_{ c}}{T}  \right]^{  \frac{3}{2}}}  $%
+    \hfill\textbullet\hfill%
+    $C_{ V} =  \frac{5 \gamma N k_{ B}}{2}%
+      \smash{\left[  \frac{T_{ c}}{T}  \right]^{  \frac{3}{2}}}  $%
+    \hfill\textbullet\hfill%
+    $\gamma =   \smash{\left[  \int\limits_{0}^{\infty}   \frac{%
+    x^{ 3 / 2} dx}{e^{ x} - 1}  \right]   \big/   %
+    \left[  \int\limits_{0}^{\infty}   \frac{%
+    x^{ 1 / 2} dx}{e^{ x} - 1}  \right]  \approx  0.77}$
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Non-Rel.\ Quantum Mech.}
+
+$\YgorUD{%
+        \langle f(j) \rangle  =  \sum_{j} f(j) \text{Prob}(j)%
+    }{%
+        \langle f( x ) \rangle  =  \int   f( x )%
+        \rho_{\text{prob}}( x )dx%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \sigma^{2}_{j}  \equiv %
+        \langle (j  -  \langle j \rangle)^{2} \rangle  = %
+        \langle j^{2} \rangle  -  \langle j \rangle^{2}%
+        \,\,\looparrowleft%
+    }{%
+        \sigma_{j}  = \sqrt{ \sigma_{j}\sigma_{j} }%
+        \text{ $\leftarrow$ std.dev. \textbullet $\uparrow$ var}%
+    }$
+\hrule
+
+$\YgorUD{%
+        [ A B , C ] = A [ B , C ] + [ A , C ] B%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        e^{i \lambda A} Q e^{ -i \lambda A} = Q  +  i\lambda [ A , Q ]%
+         +  \smash{\frac{( i\lambda )^{2  }}{2!}} [ A , Q ]^{2}  +  ...%
+    }{%
+        \,%
+    }$
+
+
+
+
+\subsection{Schr\"odinger Eqn.}
+$i\hbar \frac{\partial \Psi}{\partial t}  = %
+    \smash{\left( \frac{-\hbar^{2}}{2m}  \nabla^{2}  + %
+     V (\vec{r},t) \right)  \Psi(\vec{r},t)}%
+    \hfill \smash{(= H(\vec{r},\vec{p},t) \Psi)}.$
+
+
+
+\subsection{Time-Indep.\ Schr\"odinger Eqn.}
+
+If $\partial_{t}  V   = 0$, using %
+    $\smash{\Psi( \vec{r} ,t)  =  \psi( \vec{r}) \phi(t)}$ (`sep of vars') %
+    leads to %
+    $\smash{H ( \vec{r} ,\vec{p}) \psi  =  E \psi.}$ %
+    General sol'n is 
+    $\Psi  =  \sum_{n}   c_{n} \Psi_{ n} ( \vec{r} ,t)$ %
+    with %
+    $\Psi_{ n}  =  \psi_{ n} \phi_{ n}  =  %
+    \psi_{ n}( \vec{r})%
+    \smash{\exp{  \left(  \frac{i \smash{E_{n}}  t}{-\hbar}  \right)}}$ 
+    \& %
+    $\left. c_{n}  =  %
+    \braket{ \psi_{ n} | \Psi_{ t = 0} }  =  %
+    \int   %
+    \psi_{n}^{*}( \vec{r})\Psi(\vec{r},t = 0) d\vec{r} %
+    \,\,\right| E_{n}   \in  \mathbb{R}, c_{n}   \in  \mathbb{C}$.
+
+\hrule
+
+\textbf{1.} %
+ $\Psi_{n} \leftarrow$ \emph{stationary states}; only phase evolves in $t$.
+
+\textbf{2.} %
+ If $V$ is symmetric $\Rightarrow$ each $\psi_{n}$ (can be) even or odd.
+
+\textbf{3.} %
+ Each $E_{n}   >   V_{\text{min}}$. (Else $\Psi$ is not
+normalizeable.) 
+
+\textbf{4.} %
+ $E > V ( - \infty )$ \textbf{or}  $E  >  V ( \infty )$ $\Rightarrow$ scatter state(s).
+
+\textbf{5.} %
+ $\psi_{n}  \leftarrow$ an orthonormal set. {\tiny (Completeness assumed.)}
+
+\textbf{6.} %
+ $\psi$ continuous. 
+ $\smash{\Delta  \left( \partial_{x} \psi \right) = %
+    \frac{2m}{\hbar^{2}}  \lim_{\epsilon \rightarrow 0}%
+    \int_{-\epsilon}^{+\epsilon} V ( x )\psi( x )dx.}$
+
+\textbf{7.} %
+ $\psi_{n + 1}$ has one more zero-\underline{crossing} than $\psi_{n}$.
+
+\textbf{8.} %
+ $i\hbar \partial_{t} Q ( t )  =  [ Q ( t ) , H ( t ) ]$%
+ \quad $\Rightarrow$ \quad $\vec{p}  = %
+ \smash{\frac{im}{\hbar}}[ H ( t ) , \vec{r}]$%
+
+
+\subsection{Interpretation, Requirements, Misc.}
+
+$\vec{p}  \rightarrow   \frac{\hbar}{i} \vec{\nabla}_{  \vec{r}} $%
+    \hfill\textbullet\hfill%
+    $\vec{r}   \rightarrow   i\hbar \vec{\nabla}_{  \vec{p}} $%
+    \hfill\textbullet\hfill%
+    $[ x , p_{ x} ]  =  i\hbar$%
+    \hfill\textbullet\hfill%
+    $[ f ( x ) , p_{ x} ]  =  i\hbar\partial_{ x} f$%
+    \hfill\textbullet\hfill%
+    $\braket{g | f }^{  *}    =   \braket{ f | g }$%
+
+Eigen-funcs: $\widehat{x}:$ \hfill %
+    $x   \ket{\psi_{ y} ( x ) }  =  y   \ket{\psi_{ y} ( x ) }%
+    \Rightarrow \ket{\psi_{ y} ( x ) }  =  \delta( x - y ).$%
+
+$\widehat{p}_{ x}:$ \hfill %
+    $i\hbar\partial_{x}    \ket{\psi_{ p_{ x} } ( x ) }  =  %
+    p_{ x}    \ket{\psi_{ p_{ x} } ( x ) }%
+    \Rightarrow  \ket{\psi_{ p_{ x} } ( x ) }  =  %
+    e^{i p_{ x} x / \hbar}  /  \sqrt{2\pi\hbar}.$
+
+So: \hfill $\Phi( p_{x} ,t )  \equiv  %
+    \braket{ \psi_{ p_{ x}} ( x ) | \Psi ( x ,t ) }$ %
+    \hfill and \hfill %
+    $\Psi( y ,t )  \equiv  %
+    \braket{ \psi_{ - p_{ x}} ( y ) | \Phi ( p_{ x} ,t ) }$
+
+\hrule 
+
+$\langle Q\rangle  = %
+    \bra{\Psi}\left[Q \ket{\Psi} \right]  = %
+    \left[ \bra{\Psi}  \smash{Q^{ \dagger}} \right]\ket{\Psi}  = %
+    \sum_{n}  q_{n} | c_{n} |^{2}$
+
+$\langle Q(\vec{r},\vec{p})\rangle  =  %
+    \int  \Psi^{ *}  Q \smash{\left( \vec{r} ,%
+     \frac{\hbar}{i} \vec{\nabla}_{ \vec{r}} \right)}%
+     \Psi d^{3}\vec{r}  = %
+    %
+    \int  \Phi^{ *}  Q \smash{\left( %
+     i\hbar \vec{\nabla}_{  \vec{p}},\vec{p} \right)}%
+     \Phi d^{3}\vec{p}$
+%\hrule
+
+Spectral decomp.: $Q  =  %
+    \sum_{n}   q_{n} P_{  n}$ if $Q \ket{n}  =  q_{n} \ket{n}$
+%\hrule
+
+$\rho_{\text{prob}}(x,t) = \left| \Psi(x,t) \right|^{2}% 
+    \hfill\Longleftrightarrow\hfill
+    \int_{-\infty}^{\infty} \left| \Psi(x,t) \right|^{2}  dx = 1$%
+
+(but $\smash{\int_{a}^{b} \left| \Psi(x,t) \right|^{2} dx}$ is time-dep.\ in general.)
+%\hrule
+
+$c_{n}  =  \braket{\Psi_{ n}|\Psi} %
+    \smash{\overset{\text{prob.}}{\Longrightarrow}} |c_{n}|^{2}$%
+    \hfill\textbullet\hfill%
+    $c(z)  =  \braket{\Psi_{ z}|\Psi} %
+    \smash{\overset{\text{prob.}}{\Longrightarrow}} |c(z)|^{2} dz$
+
+$E_{n}  \smash{\overset{\text{prob.}}{\longleftrightarrow}} |c_{n}|^{2}$%
+    \hfill\textbullet\hfill%
+    $\sum_{n}  |c_{n} (t)|^{2}  = 1$%
+    \hfill\textbullet\hfill%
+    $\langle  H  \rangle  =  \sum_{n}  |c_{n}|^{2}   E_{n}$
+
+%\hrule
+
+Proj.\ op.: $P_{  n} \equiv  \sfrac{\ket{ n }  \bra{ n }}{%
+    |  \braket{ n | n }  |^{ 2}}$%
+    \hfill\textbullet\hfill%
+    $\sum_{n}   P_{  n}   =  1$%
+    \hfill\textbullet\hfill%
+    $\int   P_{  z} dz   =  1$
+
+%\hrule
+Schwarz ineq.: %
+    $\braket{ a | a } \braket{ b | b }  \geq %
+    |  \braket{ a | b }  |^{2}  \geq %
+    ( ( \braket{ a | b } - \braket{ a | b }^{ *} ) / ( 2i ) )^{ 2}$
+%\hrule
+
+Uncertainty: $\smash{ \sigma_{  A}^{ 2}   \sigma_{  B}^{2} }   \geq  %
+    ( \frac{1}{2i}  \braket{[A, B]} )^{2}$%
+    \hfill\textbullet\hfill%
+    $\sigma_{ x}  \sigma_{ p_{ x}}   \ge   \frac{\hbar}{2}$%
+    \hfill\textbullet\hfill%
+    $\sigma_{ t}  \sigma_{  E}   \ge   \frac{\hbar}{2}$
+
+%\hrule
+
+Correspondence principle $\rightarrow$ ``classical'' limit agrees.
+%\hrule
+
+Schr\"o.\ Pict.: $\langle Q(t) \rangle  = %
+    \langle \Psi(x,t)| Q | \Psi(x,t) \rangle$
+
+Heisen.\ Pict.: \hfill$\langle Q(t) \rangle  = %
+    \langle \Psi(x,0)| \smash{e^{ \frac{iHt}{\hbar}}  Q e^{ \frac{iHt}{-\hbar}}} | \Psi(x,0) \rangle$
+%\hrule
+
+Feyn-Hllmn: $\partial_{ \lambda}  E_{n} =%
+    \braket{ \psi_{n} |\partial_{ \lambda} H| \psi_{n} }$%
+    $\smash{\YgorUD{\text{\tiny (no-degen or $\psi$ is a}}{%
+             \text{\tiny \,\,proper lin.\ comb.)}}}$
+
+
+\subsection{Ehrenfest's Theorem / Virial Theorem}
+
+$\partial_{t} \langle Q \rangle %
+    \smash{ =  %
+    \frac{1}{i\hbar} \langle [Q, H] \rangle  + %
+     \langle  \partial_{t} Q \rangle }$%
+    \hfill\textbullet\hfill%
+     $\langle...\rangle$ 's obey classical laws.
+
+$\frac{1}{m} \langle \vec{p} \rangle   =  %
+    \langle \vec{ v} \rangle   =  %
+    \partial_{t} \langle \vec{ r} \rangle$%
+    \hfill\textbullet\hfill%
+    $\partial_{t} \langle \vec{p} \rangle   =   %
+    \langle   -  \vec{\nabla}  V  \rangle   =  %
+    \langle  \vec{F}  \rangle$%
+    \hfill\textbullet\hfill%
+    $\partial_{t} \langle   \vec{L}  \rangle   =   %
+    \langle  \vec{r}  \times  ( -  \vec{\nabla}  V )  \rangle$
+
+\hrule
+
+\hrule
+
+\hrule
+
+If $V(\lambda\vec{r}_{1},\lambda\vec{r}_{2},...)  = %
+    \lambda^{\nu}V(\vec{r}_{1},\vec{r}_{2},...)$ for $N$ particles then
+$\bra{n} T \ket{n} = \frac{\nu}{2}  \bra{n} V \ket{n}$ (\& 
+$E_{n} = \bra{n} T \ket{n} + \bra{n} V \ket{n}$).
+\hrule
+
+$\partial_{t}  \braket{ \vec{r} \cdot \vec{p}}  =  %
+    2 \braket{T} - \braket{\vec{r} \cdot \vec{\nabla} V }$%
+    \hfill\textbullet\hfill%
+    $\partial_{t}  \bra{ \psi_{ n} } Q \ket{ \psi_{ n} } = 0$ %
+    \textbf{if} $\partial_{t}Q = 0$ 
+
+
+\subsection{1D Scatter $(L_{-\infty} \rightarrow R_{+\infty})$ \textbullet\, 
+$R + T = 1$}
+
+$\YgorNoCriteria{%
+      \psi_{L} = Ae^{ik_{ L}x} + Be^{-ik_{ L}x}%
+    }{%
+      \psi_{R} = Fe^{ik_{ R}x} + \cancel{Ge^{-ik_{ R}x}}%
+    }$%
+    \hfill\textbullet\hfill%
+    $R \equiv \frac{|B|^{2}}{|A|^{2}}$%
+    \hfill\textbullet\hfill%
+    $T \equiv %
+    \frac{%
+        v^{\text{group}}_{R}%
+    }{%
+        v^{\text{group}}_{L}%
+    }\frac{|F|^{2}}{|A|^{2}}$
+
+
+
+\subsection{1D Infinite Square Well}
+
+$V(x) = \YgorLCriteria{ 0,}{ \infty,}%
+    \,\,\YgorRCriteria{0  \le  x  \le L }{else }$%
+    \hfill$\Longrightarrow$\hfill %
+    $\left. \frac{d^{2} \psi}{d x^{2}}  =  %
+     - k^{2} \psi \right| k  \equiv  %
+    \frac{\sqrt{2mE}}{\hbar}.$%
+\hrule
+
+$E_{n}  =  \frac{\hbar^{2} k_{n}^{2}}{2m}  =  %
+    \frac{\hbar^{2} n^{2} \pi^{2}}{2 m L^{2}}$%
+    \hfill\textbullet\hfill%
+    $\psi_{n}  =  %
+    \sqrt{ \frac{2}{L} } \sin\left(\frac{n\pi x}{L}\right)$%
+    \hfill\textbullet\hfill %
+    $n \in \mathbb{N}_{ > 0}$
+\hrule
+
+$\bra{n} x \ket{n}  =  \frac{L}{2}$%
+    \hfill\textbullet\hfill%
+    $\bra{n} x^{2} \ket{n}  = 
+    \frac{L^{2}}{3}  -  \frac{L^{2}}{2 \pi^{2} n^{2}}$%
+    \hfill\textbullet\hfill%
+    $\bra{n} p \ket{n}  =  0$
+
+$\bra{n} p^{2} \ket{n}  = 
+    \frac{\pi^{2} \hbar^{2} n^{2}}{L^{2}}$%
+    \hfill\textbullet\hfill%
+    $\sigma_{ x ,n}  =  \sqrt{ \frac{\pi^{2} n^{2} - 6}{12}}\frac{L}{\pi n}$%
+    \hfill\textbullet\hfill%
+    $\sigma_{ p ,n}  =  \hbar \frac{\pi n}{L}$
+
+
+\subsection{1D Harmonic Oscillator / 3D}
+
+$V (x) = \frac{1}{2}kx^{2}  =  \frac{1}{2}m\omega^{2} x^{2}$%
+    \hfill\textbullet\hfill%
+    $H = \hbar\omega( a^{ \dagger} a +  \frac{1}{2} )%
+     = \hbar\omega( N  +  \frac{1}{2} )$
+
+$a =  \sqrt{ \frac{m\omega}{2\hbar}}  %
+    \smash{\left( x +  \frac{i p}{m\omega} \right)}$%
+    \hfill\textbullet\hfill%
+    $a^{ \dagger} =  \sqrt{ \frac{m\omega}{2\hbar}}  %
+    \smash{\left( x -  \frac{i p}{m\omega} \right)}$%
+    \hfill\textbullet\hfill%
+    $[a,a^{ \dagger}] = 1$
+
+$[ N , a^{ \dagger} ] = a^{ \dagger}$%
+    \hfill\textbullet\hfill%
+    $[a , N ] = a$%
+    \hfill\textbullet\hfill%
+    $N \ket{n} = n \ket{n}$%
+    \hfill\textbullet\hfill%
+    $a \ket{n}  =  \sqrt{n} \ket{n  -  1}$
+
+$x =  \sqrt{  \frac{\hbar}{2m\omega}}  %
+    \smash{\left( a^{ \dagger}  + a \right)}$%
+    \hfill\textbullet\hfill%
+    $p = i \sqrt{  \frac{m\omega \hbar}{2}}  %
+    \smash{\left( a^{ \dagger}  - a \right)}$%
+    \hfill\textbullet\hfill%
+    $a^{ \dagger}  \ket{ n }  =   \sqrt{ n  +  1 } \ket{ n  +  1 }$%
+\hrule
+$\YgorUD{%
+        [ H , a ]  =  - \hbar\omega a%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        [ H , a^{ \dagger} ]  =  \hbar\omega a^{\dagger}%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        [ H , x ]  =  \frac{\hbar}{im}p%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        [ H , p ]  =  i\hbar m \omega^{2} x%
+    }{%
+        \,%
+    }$
+
+\hrule
+
+$E_{ n} = \hbar\omega( n +  \frac{1}{2} )$%
+    \hfill\textbullet\hfill%
+    $\psi_{ n} =  %
+    \frac{1}{\sqrt{2^{ n} n!}}%
+      \left( \frac{m\omega}{\pi \hbar} \right)^{  \frac{1}{4}}%
+     \smash{e^{ \frac{m \omega x^{2} }{-2\hbar}}}%
+     H_{ n}  \left(   \sqrt{ \frac{m\omega}{\hbar}} x \right)$
+
+$\psi_{ n} =  \frac{1}{\sqrt{ n!}}( a^{ \dagger} )^{ n} \psi_{0}$%
+    \hfill\textbullet\hfill%
+    $n \in \mathbb{N}_{ \ge 0}$%
+    \hfill\textbullet\hfill%
+    $\smash{\overset{\text{(hermite poly's)}}{%
+        H_{n} (x) = ( - 1)^{ n}%
+    } e^{x^{2}} }%
+    \partial_{x}^{n}  \left(  e^{ -x^{2}} \right)$
+\hrule
+
+
+$\bra{n} x \ket{q} = \sqrt{ \hbar / 2m\omega}%
+    ( \sqrt{n} \delta_{ q ,n - 1}  +   \sqrt{q} \delta_{ n ,q - 1})$%
+    \hfill\textbullet\hfill%
+    $\bra{n} V \ket{n}  =  \frac{1}{2} E_{ n}$ 
+
+$\bra{n} p \ket{q} = i \sqrt{ m\omega\hbar / 2}%
+    ( \sqrt{n} \delta_{ q ,n - 1}  -   \sqrt{q} \delta_{ n ,q - 1})$%
+    \hfill\textbullet\hfill%
+    $\bra{n} T \ket{n}  =  \frac{1}{2} E_{ n}$
+
+$\bra{n} x^{2} \ket{q} = ( \hbar / 2m\omega )%
+    \smash{\left(%
+         ( 2q  +  1 )\delta_{ n ,q} +%
+        \sqrt{ n ( q  +  1 )}\delta_{ n ,q + 2} +%
+        \sqrt{ q( n  +  1 )}\delta_{ n ,q - 2}%
+     \right)}$
+
+$\bra{n} p^{2} \ket{q} = ( m\omega\hbar / 2 )%
+    \smash{\left(%
+         ( 2q  +  1 )\delta_{ n ,q} -%
+        \sqrt{ n ( q  +  1 )}\delta_{ n ,q + 2} -%
+        \sqrt{ q( n  +  1 )}\delta_{ n ,q - 2}%
+     \right)}$%
+
+\hrule
+
+$\psi = \psi_{ a }( x )\psi_{ b }( y )\psi_{ c }( z )$%
+    \hfill\textbullet\hfill%
+    $\smash{E_{ n}   =   \hbar\omega ( n  +  \frac{3}{2} )}$%
+    \hfill\textbullet\hfill%
+    $\smash{d_{ n}  =  ( n  +  1 ) ( n  +  2 ) / 2}$
+
+
+\subsection{1D Free Particle}
+
+$V(x) = 0$%
+    \hfill\textbullet\hfill%
+    $\partial^{2}_{x} \psi  =  -k^{2} \psi$%
+    \hfill\textbullet\hfill%
+    $p = \hbar k$%
+    \hfill\textbullet\hfill%
+    $\lambda = \frac{2\pi}{|k|}$%
+    \hfill\textbullet\hfill%
+    $\omega_{ k} = \frac{\hbar k^{2}}{2m}$
+
+$\left\{k \equiv \pm\frac{\sqrt{2mE}}{\hbar}%
+        \right|\,\,\YgorRCriteria{%
+            k > 0 \text{ moves}\rightarrow%
+        }{%
+            k < 0 \text{ moves}\leftarrow%
+        }$%
+    \hfill\textbullet\hfill%
+    $\smash{%
+    \underset{\text{(stationary states)}}{%
+        \Psi_{k} \propto  %
+        e^{i\big( kx-\frac{\hbar k^{2} }{2m} t \big)}%
+    }}$
+
+
+$\Psi(x,t) = \frac{1}{\sqrt{2\pi}} %
+    \smash{  \int\limits_{-\infty}^{\infty}} %
+       \phi(k)%
+    e^{i\big( kx-\frac{\hbar k^{2} }{2m} t \big)}%
+    dk$\hfill $\leftarrow\smash{\YgorNoCriteria{%
+        \text{``Wave packet.''}%
+    }{%
+        \text{General sol'n,}%
+    }}$
+
+%\underset{\text{(wave packet)}}{\text{General sol'n,}}$
+
+\,\hfill with $\sim$weights: $\phi(k) = \frac{1}{\sqrt{2\pi}} %
+      \int_{ - \infty}^{\infty} %
+      \Psi(x,t = 0)%
+    e^{-ikx} dx.$
+\hrule
+
+$v_{\text{phase}} =  %
+    \frac{\omega}{| k |}  = %
+    \frac{\hbar|k|}{2m} = %
+     \sqrt{  \frac{E}{2m}}$%
+    \hfill\textbullet\hfill%
+    $\smash{\overset{\text{{\tiny(\&classical)}}}{v_{\text{group}} = }}%
+      \frac{d\omega}{dk} = \frac{\hbar|k|}{m} = %
+     \sqrt{ \frac{2E}{m}} $
+
+
+\subsection{1D Delta Well/Barrier}
+
+$V ( x ) = -\alpha \delta( x )$%
+    \hfill\textbullet\hfill%
+    $\partial_{x}^{2} \psi  = %
+     -\frac{2mE}{\hbar^{2}} \psi  \equiv %
+     \smash{\overset{_\text{{\tiny bound}}}{\kappa^{2}\psi}} \equiv %
+     \smash{\overset{_\text{{\tiny scatter}}}{-k^{2}\psi.}}$
+\hrule
+
+Bound $\rightarrow\kappa$%
+    \hfill\textbullet\hfill%
+    $\psi(x) = \frac{\sqrt{m\alpha}}{\hbar}%
+    \smash{\exp{ \left( \frac{m\alpha|x|}{-\hbar^{2}} \right)}}$%
+    \hfill\textbullet\hfill%
+    $E = -\frac{m\alpha^{2}}{2\hbar^{2}}$
+\hrule
+
+Scatter $\rightarrow  k$%
+    \hfill\textbullet\hfill%
+    $R = \left[ 1  +  \left(  %
+    \frac{2\hbar^{2} E}{m\alpha^{2}}  \right) \right]^{ - 1}   $%
+    \hfill\textbullet\hfill%
+    $T = \left[ 1  +  \left(  %
+    \frac{m\alpha^{2}}{2\hbar^{2} E}  \right) \right]^{ - 1}   $
+
+\hrule
+
+$\smash{V ( x ) = \alpha \delta( x )}$%
+    \hfill\textbullet\hfill%
+    No bound%
+    \hfill\textbullet\hfill%
+    Same scatter as $\delta$-well.
+
+
+\subsection{1D Double Delta Well}
+
+$V ( x ) = -\alpha( \delta( x + a ) + \delta( x - a ) )$%
+    \hfill\textbullet\hfill%
+    $\kappa  \equiv  \frac{\sqrt{-2mE}}{\hbar}$%
+    \hfill\textbullet\hfill%
+    $k  \equiv  \frac{\sqrt{2mE}}{\hbar}$%
+
+Bound:\hfill%
+    $\YgorLCriteria{%
+     \text{Even: } e^{ -2\kappa a} = \frac{\hbar^{2} \kappa}{m\alpha}  - 1%
+    }{%
+     \text{Odd: } e^{ -2\kappa a} = 1 - \frac{\hbar^{2} \kappa}{m\alpha}%
+    }$
+    $\left|\YgorRCriteria{%
+     \text{ Sol'n: always}%
+    }{%
+     \text{ Sol'n: sometimes}%
+    }\right.$
+
+Scatter:
+$T = \frac{1 \quad\quad\quad\smash{(\text{with } z= \sfrac{\alpha m}{\hbar^{2}  k})} }{%
+    1 + 2z^{2} [ ( 1  +  z^{2} ) + ( 1  -  z^{2} ) \cos( 4ak ) - 2z%
+     \sin( 4ak )]}$
+
+
+
+\subsection{1D Finite Square Well / Barrier}
+
+$V ( x ) = \YgorLCriteria{ -V_{ 0},}{\,0,}\,\,%
+    \,\,\YgorRCriteria{ |x|  \le a }{ |x|  > a }$%
+    \hfill\textbullet\hfill%
+    $\ell  \equiv  \frac{\sqrt{2m( E + V_{0} )}}{\hbar}$%
+    \hfill\textbullet\hfill%
+    $\kappa  \equiv  \frac{\sqrt{-2mE}}{\hbar}$
+
+Bound:\hfill%
+    $\YgorLCriteria{%
+     \text{Even: } \tan{z}  = %
+                    \sqrt{ (\sfrac{  z }{ z_{0}} )^{2}  -   1}%
+    }{%
+     \text{Odd: } \tan{z}  = %
+         \sfrac{ -  1 }{ \sqrt{ (\sfrac{  z }{ z_{0}} )^{2}  -   1}}%
+    }$
+    $\left|\,\,\YgorRCriteria{%
+     z \equiv  \ell a, \quad \&%
+    }{%
+     z_{0} \equiv \frac{a}{\hbar} \sqrt{2mV_{0}}%
+    }\right.$
+
+Sol'ns: \textbullet Even: always, finite\# \textbullet Odd: iff $\smash{V_{ 0}  \ge  \frac{\pi^{2}
+\hbar^{2}}{8 m \alpha^{2}}}.$
+
+Scatter: \hfill%
+    $T^{- 1} = %
+    1  +  \smash{%
+    \frac{V_{0}^{2}}{4E( E + V_{ 0} )}}%
+    \sin^{2}  \left(  \frac{2a}{\hbar}%
+      \sqrt{2m( E  +  V_{ 0} )} \right)$
+
+
+\hrule
+
+The 1D Finite Square Well, but $-V ( x )$. No bound.
+
+Scatter: \hfill%
+    $T^{- 1}_{ E < V_{ 0}}   = %
+    1  +  \smash{\frac{V_{0}^{2}}{4E( V_{ 0} - E )}}%
+    \sinh^{2}  \left(  \frac{2a}{\hbar}%
+      \sqrt{2m( V_{ 0}  -  E )} \right)$%
+
+   $T^{- 1}_{  E = V_{ 0}}   = %
+     1  +  \frac{2mE}{\hbar^{2}} a^{2}$%
+    \hfill\textbullet\hfill%
+    $T^{- 1}_{  E > V_{ 0}}   = %
+     1   +   \smash{\frac{V_{0}^{2}}{4E( E - V_{ 0} )}}%
+    \sin^{2}  \left(  \frac{2a}{\hbar}%
+      \sqrt{2m( E  -  V_{ 0} )} \right)$%
+
+
+
+\subsection{1D Sudden Step Up / Drop Down}
+
+$V ( x ) = %
+    \YgorLCriteria{\,0,}{ V_{ 0},}\,\,\,\,%
+    \YgorRCriteria{ x  \le  0 }{ x  >  0 }$%
+    \hfill\textbullet\hfill%
+    Reminder: $\left.\Delta v_\text{group}\right|_{x = 0}  \neq  0$.
+
+$\smash{T_{ E < V_{ 0}}   = 0}$%
+    \hfill\textbullet\hfill%
+    $T_{ E > V_{ 0}}   = %
+      \smash{\sqrt{ \frac{E - V_{ 0}}{E}}}%
+    \frac{4E}{V_{ 0}^{2}}%
+    \smash{\left(  \sqrt{E}  -  \sqrt{E - V_{ 0}} \right)^{2}}$
+
+
+\hrule
+
+Like Step Up, but $-V ( x )$%
+    \hfill\textbullet\hfill%
+    $T = \sfrac{4(  \sqrt{ 1  +  \sfrac{V_{ 0} }{ E} }) }{%
+     ( 1  +  \sqrt{1  +  \sfrac{V_{ 0} }{ E}} )^{ 2}}$
+
+
+\subsection{3D Spherical Symmetry \& $\partial_{t}V = 0$}
+
+$\psi \equiv R( r )Y ( \theta ,\phi )$%
+    \hfill\textbullet\hfill%
+    $u( r ) \equiv rR( r )$%
+    \hfill\textbullet\hfill%
+    $Y_{ l}^{- m}      =  ( - 1 )^{ m} ( Y_{ l}^{ m} )^{ *}$
+
+% Normalization and orthonormality of spherical harmonics.
+$\int_{0}^{ \infty}  | R|^{2}r^{2} dr = 1$%
+    \hfill\textbullet\hfill%
+    $\int_{ 0}^{ 2\pi}    \int_{ 0}^{ \pi} %
+     ( Y_{ l}^{ m}  )^{ *}  Y_{ l '}^{ m '}%
+      \sin \theta d\theta d\phi = %
+    \delta_{l ,l '} \delta_{ m ,m '}$
+
+
+% Spherical harmonic from Griffiths'. The weird \epsilon normalization is
+% supposedly common, according to Griffiths.
+$\left. Y_{ l}^{ m} ( \theta ,\phi )  = %
+    \epsilon  \sqrt{  \frac{( 2l + 1 )}{4\pi}%
+     \frac{( l - | m | )!}{( l + | m | )!}} e^{ im\phi}%
+     P_{ l}^{m} ( \cos \theta )%
+     \right|%
+     \epsilon = %
+     \left\{^{1 \text{ if } m < 0,}%
+    _{(  - 1 )^{ m} \text{ else.}}\right.$
+
+% How to construct the various pieces.
+$P_{ l}^{m} ( x )  = %
+    \smash{ ( 1  -  x^{2} )^{  \frac{ | m | }{2}}}%
+    \partial_{x}^{ | m | } P_{l} ( x )$%
+    \hfill\textbullet\hfill%
+    $P_{l} ( x )  = %
+    \partial_{ x}^{l} \sfrac{ ( x^{ 2}   -  1 )^{ l}  }{l \,! 2^{l}}$%
+    \hfill\textbullet\hfill%
+    $\partial_{t} \langle  \vec{L}  \rangle  = 0$
+
+% Radial equation.
+$\frac{-\hbar^{2}}{2m} \partial_{r}^{2} u  + %
+     \left[ V  +  \frac{\hbar^{2}}{2m} %
+    \frac{l( l + 1 )}{r^{2}}  \right]   u%
+     =  Eu$%
+    \hfill\textbullet\hfill%
+    $ \,^{[ H ,L^{ 2} ]=[ H ,L_{ z} ]=0}%
+         _{m\in -l,...0,1,...l}$
+
+
+\subsection{3D Rigid $\circlearrowleft$ing Circle with $N$ Masses}
+
+$N\circlearrowleft$ about $\vec{r}_{ \circ}$ at $r  =  a$%
+    \hfill\textbullet\hfill%
+    $H = T   +  \cancel{V}  = \frac{1}{2} Mv^{2}$%
+    \hfill\textbullet\hfill%
+    $| \vec{L} | = aMv$
+
+$H = \frac{L^{ 2}}{2a^{2} M} \Rightarrow %
+    E_{l} = \frac{\hbar^{2} l( l + 1 )}{2a^{2} M}$%
+    \hfill\textbullet\hfill%
+    $\psi_{lm} = Y_{l}^{m}$%
+    \hfill\textbullet\hfill%
+    $ \,^{m\in-l,..0,1,..l}%
+    _{l\in0,1,2,...}$
+
+
+\subsection{3D Inf. Spherical Well}
+
+$V(x) = \YgorLCriteria{ 0,}{ \infty,}%
+    \,\,\YgorRCriteria{r  \le a }{else }$%
+    \hfill$\Longrightarrow$\hfill%
+    $\left. \partial_{r}^{2} u  =  %
+     \left[ \frac{l( l + 1 )}{r^{2}} - k^{2} \right]  u%
+    \right| k  \equiv  \frac{\sqrt{2mE}}{\hbar}.$
+
+$\YgorNoCriteria{%
+        u( r ) = A r j_{l} ( kr )  +  B r n_{l} ( kr )%
+    }{%
+        j_{0} = \frac{\sin x}{x} \text{ \textbullet }%
+        \,n_{0} = \frac{-\cos x}{x}%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorNoCriteria{%
+        j_{l} ( x ) = ( - x )^{ l}%
+         \left( \frac{1}{x} \partial_{x} \right)^{ l}%
+         \frac{\sin x}{x}%
+    }{%
+        n_{l} ( x ) = - ( - x )^{ l}%
+         \left( \frac{1}{x} \partial_{x} \right)^{ l}%
+         \frac{\cos x}{x}%
+    }$
+
+$\left.\YgorNoCriteria{%
+        j_{l} ( x ) \approx \frac{2^{l} l! x^{l}}{( 2l + 1 )!}%
+    }{%
+        n_{l} ( x ) \approx \frac{-( 2l )!}{2^{l} l! x^{l + 1}}%
+    }\right|  x   \ll   1$%
+    \hfill\textbullet\hfill%
+    $\left.\YgorNoCriteria{%
+        j_{l} ( x ) \approx \frac{1}{x} \cos( x - \frac{\pi}{2} ( l  +  1 ) )%
+    }{%
+        n_{l} ( x ) \approx \frac{1}{x} \sin( x - \frac{\pi}{2} ( l  +  1 ) )%
+    }\right|  x   \gg   1$
+
+$\partial_{x} j_{l} ( x ) = \frac{l}{x}j_{l} ( x )  - %
+    j_{l + 1} ( x )$%
+    \hfill\textbullet\hfill%
+    $\partial_{x} n_{l} ( x ) = \frac{l}{x}n_{l} ( x ) - %
+    n_{l + 1} ( x )$
+
+\hrule
+
+$\left. E_{nl}  =  \frac{\hbar^{2}   \beta_{ nl}^{2}}{2ma^{2}}  \right|%
+      \phantom{\,}^{j_{l} ( \beta_{nl} ) = 0\,( \sfrac{n\text{ roots}}{l})}%
+    _{E_{nl}\rightarrow( 2l + 1 )\text{-degen.}}$%
+    \hfill\textbullet\hfill%
+    $\psi_{nlm} = j_{l} ( \sfrac{\beta_{ nl}r }{ a} )Y_{l}^{m}$
+
+
+\subsection{Hydrogen Atom -- Bound States}
+
+$V ( r ) = \frac{-e^{2}}{4\pi\epsilon_{ \circ}}\frac{1}{r}$%
+    \hfill\textbullet\hfill%
+    $\kappa \equiv \frac{\sqrt{-2mE}}{\hbar}$%
+    \hfill\textbullet\hfill%
+    $\smash{\left.E_{ n} = \frac{-m}{2\hbar^{ 2} n^{ 2}}%
+       \left(  \frac{e^{2}}{4\pi\epsilon_{ \circ}}  \right)^{  2}%
+     \right| \,^{n\in\mathbb{N}_{ > 0},}%
+    _{n^{ 2}\text{-deg.}}}$
+
+$\smash{a_{ \circ} = \frac{\hbar}{\alpha m_{ e} c} = %
+    \frac{4\pi\epsilon_{ \circ} \hbar^{2}}{m_{ e} e^{2}} = %
+    \frac{1}{n\kappa_{n}} \approx %
+    0.529}$\AA%
+    \hfill\textbullet\hfill%
+    $ \,^{m\in-l,..0,1,..l}%
+    _{l\in0,1,..,( n - 1 )}$
+
+$\psi_{ nlm}  =  \sqrt{ \left[  \frac{2}{na_{ \circ}}  \right]^{ 3}%
+        \frac{( n - l - 1 ) !}{2n[ ( n + l ) !]^{ 3}}}%
+    e^{ \frac{-r}{n a_{ \circ}}}%
+       \left[  \frac{2r}{na_{ \circ}}  \right]^{ l}%
+      L_{ ( n + l ) - ( 2l + 1 )}^{ ( 2l + 1 )}%
+       \left(  \frac{2r}{na_{ \circ}}  \right)%
+     Y_{l}^{ m} ( \theta ,\phi )$
+
+$L_{ q - p}^{p} ( x ) = %
+    (  - 1 )^{p}  \partial_{x}^{p} L_{q} ( x )$%
+    \hfill\textbullet\hfill%
+    $L_{q} ( x ) = e^{x}  \partial_{x}^{q} %
+      \left( e^{ - x} x^{q} \right)$%
+    \hfill\textbullet\hfill%
+    $\psi_{ n 0 0}  = \frac{e^{  \sfrac{ -  r }{ na_{ \circ}}}}{   \sqrt{  \pi %
+    ( n a_{ \circ}  )^{ 3 }}}$
+\hrule
+
+$\ket{ nlm } \Rightarrow %
+    \YgorUD{%
+        \braket{ V } =2E_{ n}%
+    }{%
+        \braket{ T } = - E_{ n}%
+    }$\hfill\textbullet\hfill%
+    $\braket{ \frac{1}{r} } = \frac{1}{a_{ \circ}  n^{ 2}}$%
+    \hfill\textbullet\hfill%
+    $\braket{ \frac{1}{r^{ 2}} }  =  \frac{1}{%
+        a_{ \circ}^{ 2}  n^{ 3}  ( l + 1 / 2 )}$%
+    \hfill\textbullet\hfill%
+    $\braket{ p^{2} }  =  \left(  \frac{\hbar}{a_{ \circ}n}  \right)^{  2}  $%
+   
+$\YgorUD{%
+        \braket{ r } = \frac{a_{ \circ}}{2} [3n^{ 2} - l ( l + 1 ) ]%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \frac{s + 1}{n^{ 2}} \langle  r^{ s}  \rangle  -  ( 2s + 1 )%
+        a_{ \circ}  \langle  r^{ s - 1}  \rangle +%
+        \frac{s}{4} [  ( 2l + 1 )^{ 2}  -  s^{ 2}] a_{ \circ}^{2}%
+         \langle  r^{ s - 2}  \rangle = 0%
+    }{%
+        \,%
+    }$
+\hrule
+
+$\ket{ 100 } \Rightarrow \YgorUD{%
+        \braket{ r^{q} } = %
+        \frac{( q + 2 )!a_{ \circ}^{ q}}{2^{q + 1}}%
+    }{%
+        \,%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \YgorUD{\text{Most}}{%
+        \text{prob}}%
+    }{%
+        r = a_{ \circ}%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \YgorUD{%
+            \braket{ z^{2} } = a_{ \circ}^{ 2}%
+        }{%
+            \braket{ z } = 0%
+        }%
+    }{%
+        \,%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \braket{ z^{q} } =\frac{( 1 + ( - 1 )^{ q} )%
+        ( q + 2 )! a_{ \circ}^{ q}}{%
+        ( q + 1 )2^{ q + 2}}%
+    }{%
+        \,%
+    }$
+
+
+
+
+\subsection{Angular Momentum, Intrinsic Spin}
+
+$\, ^{\vec{L}=\vec{r}\times\vec{p}}%
+     _{\vec{S}=\frac{\hbar}{2}\vec{\sigma}}$%
+    \hfill\textbullet\hfill%
+    $\, ^{L^{ 2} =\vec{L}\cdot\vec{L}}%
+     _{S^{ 2} =\vec{S}\cdot\vec{S}}$%
+    \hfill\textbullet\hfill%
+    $\, ^{[ L_{ x} ,L_{ y} ]=i\hbar L_{ z}}%
+         _{[ S_{ x} ,S_{ y} ]=i\hbar S_{ z}}$%
+    \hfill\textbullet\hfill%
+    $\, ^{[ L_{ y} ,L_{ z} ]=i\hbar L_{ x}}%
+         _{[ S_{ y} ,S_{ z} ]=i\hbar S_{ x}}$%
+    \hfill\textbullet\hfill%
+    $\, ^{[ L_{ z} ,L_{ x} ]=i\hbar L_{ y}}%
+         _{[ S_{ z} ,S_{ x} ]=i\hbar S_{ y}}$
+ 
+$\, ^{[ \vec{L} ,r^{ 2} ]=0}%
+     _{[ \vec{L} ,p^{ 2} ]=0}$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{[ \vec{L} ,\vec{S}]= 0}{%
+         [ L^{ 2} ,\vec{S}]= 0}$%
+    \hfill\textbullet\hfill%
+    $\, ^{[ L^{ 2}  ,\vec{L}]=0}%
+         _{[ S^{ 2}  ,\vec{S}]=0}$%
+    \hfill\textbullet\hfill%
+    $\, ^{L_{ \pm}\equiv L_{ x} \pm i L_{ y}}%
+         _{S_{ \pm}\equiv S_{ x} \pm i S_{ y}}$%
+    \hfill\textbullet\hfill%
+    $\, ^{[ L_{ z} ,L_{ \pm} ]=\pm\hbar L_{ \pm}}%
+         _{[ S_{ z} ,S_{ \pm} ]=\pm\hbar S_{ \pm}}$
+
+$\, ^{[ L_{ z} ,x ]=i\hbar y}%
+         _{[ L_{ z} ,p_{ x} ]=i\hbar p_{ y}}   $%
+    \hfill\textbullet\hfill%
+    $\, ^{[ L_{ z} ,y ]=- i\hbar x}%
+         _{[ L_{ z} ,p_{ y} ]=- i\hbar p_{ x}}   $%
+    \hfill\textbullet\hfill%
+    $\, ^{[ L_{ z} ,z ]=0}%
+         _{[ L_{ z} ,p_{ z} ]=0}   $
+    \hfill\textbullet\hfill%
+    $\YgorUD{[ \vec{L} \cdot \vec{S} ,\vec{L}]=i\hbar \vec{L} \times \vec{S} }{%
+         [ \vec{L} \cdot \vec{S} ,\vec{S}]=i\hbar \vec{S} \times \vec{L} }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{[ \vec{L} \cdot \vec{S} ,\vec{J}]=0 }{%
+         [ \vec{L} \cdot \vec{S} ,L^{ 2}]=0 }$%
+
+$\YgorUD{[ \vec{L} \cdot \vec{S} ,S^{ 2}]=0 }{%
+         [ \vec{L} \cdot \vec{S} ,J^{ 2}]=0 }$%
+    \hfill\textbullet\hfill%
+    $\, ^{L^{ 2}Y_{ l}^{ m} =\hbar^{2} l ( l + 1 )Y_{ l}^{ m}}%
+     _{S^{2} \ket{ sm } = \hbar^{2}  s%
+    ( s + 1 ) \ket{ sm }}$%
+    \hfill\textbullet\hfill%
+    $\, ^{L_{ \pm}Y_{ l}^{ m} =%
+    \hbar \sqrt{ ( l \mp m ) ( l \pm m + 1 )} %
+    Y_{ l}^{ m \pm 1}}%
+         _{S_{ \pm} \ket{ sm } =%
+    \hbar \sqrt{ ( s \mp m ) ( s \pm  m + 1 )} %
+     \ket{ sm \pm 1 }}$%
+
+$\, ^{L_{ z}Y_{ l}^{ m} = \hbar m Y_{ l}^{ m}}%
+     _{S_{ z} \ket{ sm } = \hbar m  \ket{ sm }}$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        L_{ z} = - i\hbar\partial_{\phi}%
+    }{%
+        ( Y_{ l}^{ m} )^{ *} xy Y_{ l}^{ m} = 0%
+    }$%
+    \hfill\textbullet\hfill%
+    $ \,^{s=0,\sfrac{1 }{2},1,...}%
+     _{m_{ s}=-s,..,0,1,..,s}$
+\hrule
+
+$\vec{\sigma} = %
+      \left[  \left[ \,^{0}_{1}\,^{1}_{0}\right]  , %
+          \big[ \,^{0}_{i}\, ^{- i}_{\,\,0} \big] , %
+          \left[ \,^{1}_{0}\, ^{\,\,0}_{-  1} \right]  \right]$%
+    \hfill$   \rightarrow   $\hfill%
+    $\left[ \YgorUD{\,\,1}{\pm 1} \right]  ,  %
+     \left[ \YgorUD{\,\,1}{\pm i} \right]  ,  %
+     \left[\YgorUD{1}{0} \right]  /  \left[ \YgorUD{0}{1} \right]  $
+    \hfill\textbullet\hfill%
+    $\sigma_{ j} \sigma_{ k}  = %
+    \delta_{ j k}  +  i \sum_{ n}  %
+    \epsilon_{ j k n}^{  ( 1 2 3 )} \sigma_{ n}$%
+\hrule
+
+$\YgorUD{%
+        \ket{ j _{1}   m _{1} } %
+        \ket{ j _{2}   m _{2} }=%
+         \sum\limits_{j}%
+         C ^{j _{1}   j _{2}   j}%
+             _{m _{1}   m _{2}   m}%
+        \ket{ j   m }%
+    }{%
+        J_{z} \rightarrow m \equiv m_{1} + m_{2}
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \ket{ jm }=%
+             \sum\limits_{m _{1} ,  m _{2}}%
+              C _{m _{1}   m _{2}   m}%
+           ^{j _{1}   j _{2}   j}%
+        \ket{ j _{1}   m _{1} }%
+        \ket{ j _{2}   m _{2} }%
+    }{%
+        J^{2} \rightarrow j\in%
+        | j _{1} - j _{2} |,..( + + 1 )..,( j _{1} + j _{2} )%
+    }$%
+\hrule
+
+$\YgorUD{%
+        \text{If $s_{ 1 }  =  1 / 2$ then:}%
+    }{%
+        \text{( with $s = s_{ 2}  \pm  1 / 2$ )}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \ket{ sm } = A\ket{ \frac{1}{2} \frac{1}{2} }%
+                        \ket{ s_{2}( m - \frac{1}{2} ) } + %
+                       B\ket{ \frac{1}{2} \frac{- 1}{2} }%
+                        \ket{ s_{2}( m + \frac{1}{2} ) }%
+    }{%
+        A=\sqrt{\frac{s_{2} \pm m + 1 / 2}{2s_{2} + 1}} \text{\textbullet}%
+        B=\pm\sqrt{\frac{s_{2} \mp m + 1 / 2}{2s_{2} + 1}}%
+    }$
+
+
+\subsection{Corrections to hydrogen}
+
+$\YgorUD{E_{n} \smash{ \sim \alpha^{2}}}{\,}$\hfill\textbullet\hfill%
+    $\YgorUD{\text{Fine struc.} \smash{ \sim\alpha^{4}}}{\smash{%
+       \gamma ( v )\neq 1 \,\&\, \vec{S}\leftrightarrow\circlearrowleft%
+     }}$\hfill\textbullet\hfill%
+    $\YgorUD{\text{Lamb}\Delta  \sim\alpha^{5}}{\smash{%
+       \text{quant'zd } \vec{E}%
+     }}$\hfill\textbullet\hfill%
+    $\YgorUD{\text{Hyperfine} \smash{ \sim\alpha^{4}}m_{ e} / m_{ p}}{\smash{%
+       \vec{\mu}_{ p} \rightarrow \vec{B} \,\Rightarrow\,  \vec{\mu}_{ e} \leftrightarrow \vec{B}_{ p} %
+     }}$
+\hrule
+
+$\YgorUD{%
+        \smash{\overset{\text{Fine struc:}}{%
+        H'  = H'_{ \text{rel}}  +  H'_{ s - o}   =}}%
+        \frac{-p^{4}}{8m^{ 3} c^{ 2}} +%
+        \frac{\hbar \alpha}{2m^{ 2} r^{3}} \vec{S}\cdot \vec{L}%
+    }{%
+        \vec{S}\cdot \vec{L} = ( J^{2} - L^{2} - S^{2} ) / 2%
+        \text{\textbullet}%
+        p^{2}\psi = 2m( E - V )\psi%
+    }    $\hfill\textbullet\hfill%
+    $\YgorUD{%
+        E_{nj} = \frac{E^{0}_{0}}{n^{2}} %
+        \left[ 1  +  \left(  \frac{\alpha}{n}  \right)^{  2}%
+         \left(  \frac{n}{j + 1  / 2} -  \frac{3}{4}  \right) \right]%
+    }{%
+        \text{Good \#'s: } n, l, s, j, m_{j}%
+    }$
+\hrule
+
+$\YgorUD{%
+        \text{Zeeman: }%
+        H'  = -( \vec{\mu}_{l}  +  \vec{\mu}_{s} )\cdot \vec{B}_{\text{ext}}%
+         = \frac{e}{2m} ( \vec{L} + 2\vec{S} )\cdot \vec{B}_{\text{ext}}%
+        \text{ \textbullet conflicts w/ fs}
+    }{%
+        \text{If: }B_{\text{ext}} \ll B_{\text{int}} \Rightarrow %
+        \text{fine struc domn8's} \Rightarrow%
+        E^{1} = \braket{ nljm_{j} | H' | nljm_{ j} }%
+    }$%
+
+
+$\YgorUD{%
+        \text{ use: }\vec{S}_{\text{t-avgd}} = \vec{J} ( \vec{S}\cdot \vec{J} ) / J^{2}%
+        \text{\textbullet}%
+        \vec{S}\cdot \vec{J} = ( J^{2} - L^{2} + S^{2} ) / 2%
+        \text{\textbullet} E^{1}_{\text{gs}} \sim \pm \mu_{B} B_{\text{ext}}.%
+    }{%
+        \text{If: }B_{\text{ext}} \gg B_{\text{int}} \Rightarrow %
+        \text{zeeman domn8's} \Rightarrow%
+        \text{non-pert with} \ket{ nlm_{ l}m_{ s} }%
+    }$%
+
+$\YgorUD{%
+        \text{ align } ||\widehat{z} \Rightarrow %
+        E^{1} = \mu_{ B}B_{\text{ext}} ( m_{ l} + 2m_{ s} ).%
+        \text{(note: can also pert the fs,}% 
+    }{%
+        \text{ use: }\braket{ \vec{S}\cdot \vec{L} } = %
+        \cancel{\braket{ S_{ x} } \braket{ L_{ x} }}  + %
+        \cancel{\braket{ S_{ y} } \braket{ L_{ y} }}  + %
+        \braket{ S_{ z} } \braket{ L_{ z} }  = %
+        \hbar^{2}m_{ l}m_{ s}%
+        \text{ if including }H'_{\text{fs}}. )%
+    }$
+
+$\YgorUD{%
+        \text{If: }B_{\text{ext}} \sim B_{\text{int}} \Rightarrow %
+        \text{use full-blown degen pert ($\rightarrow$ W eigenprob)}%
+    }{%
+        \,%
+    }$
+\hrule
+
+$\YgorUD{%
+        \text{Linear Stark: }%
+        H'  = \vec{E}_{\text{ext}}\cdot\vec{p}_{ e}.%
+        \text{ If } \vec{E}_{\text{ext}} = | \vec{E} |\widehat{z}%
+        \text{ then } H'  = ezE_{\text{ext}}  = %
+    }{%
+        eE_{\text{ext}} r\cos\theta. \text{ Use degen pert. Most integrals}%
+        \rightarrow 0.
+    }$%
+\hrule
+
+$\YgorUD{%
+        \text{Hyperfine: }%
+        H'  = -\vec{\mu}_{e}  \cdot  \vec{B}_{p}%
+        \Rightarrow E^{1}=%
+        A\langle[3( \vec{S}_{ p} \cdot\widehat{r} )%
+         ( \vec{S}_{ e} \cdot\widehat{r} ) - %
+        \vec{S}_{ p} \cdot \vec{S}_{ e}] / r^{ 3}\rangle + %
+    }{%
+        C | \psi ( 0 ) |^{2} %
+        \langle \vec{S}_{ p} \cdot \vec{S}_{ e} \rangle%
+        \,\text{\textbullet}\,%
+        C=\mu_{ \circ}g_{ p}e^{ 2} / 3m_{ p}m_{ e}%
+        =8 \pi  A / 3%
+        \,\text{\textbullet}\,%
+        \vec{S}_{ p} \cdot \vec{S}_{ e} = ( S^{2} - S^{2}_{e} - S^{2}_{p} ) / 2%
+    }$%
+
+$\YgorUD{%
+        \text{If: $l = 0  \Rightarrow $ A term}\rightarrow 0\,\,%
+        \Rightarrow\,\,\,%
+        E^{1} = ( S^{ 2} - 3\hbar^{2} / 2 )%
+        2 g_{ p}\hbar^{2} / 3m_{ p}m_{ e}^{ 2}c^{2}a_{ \circ}^{4}.%
+    }{%
+        \text{Breaks spin degen of the gs: $S^{ 2}=0$ for singlet, $2\hbar^{2}$ triplet.} %
+    }$
+
+
+
+\subsection{Stationary $e^{ -}$ in Magnetic Field}
+
+$\, ^{\vec{\mu}=\gamma\vec{S}}%%
+     _{\vec{\tau}=\vec{\mu}\times\vec{B}}$%
+    \hfill\textbullet\hfill%
+    $\, ^{H=\cancel{T} - \vec{\mu}\cdot \vec{B}}%
+         _{\text{if }\vec{B}=B_{ \circ}\widehat{z}}$%
+    \hfill\textbullet\hfill%
+    $\, ^{E_{ \pm} = \mp \sfrac{\gamma B_{ \circ}  \hbar }{2}}%
+         _{\langle  S_{ z}  \rangle = \frac{\hbar}{2} \cos\alpha}$%
+    \hfill\textbullet\hfill%
+    $\, ^{\langle  S_{ x}  \rangle \propto \cos\omega}%
+         _{\langle  S_{ y}  \rangle \propto \sin\omega}$%
+    \hfill\textbullet\hfill%
+    $\, ^{\omega = \gamma B_{ \circ}}%
+         _{\text{Larmor}}$
+
+
+\subsection{$e^{-}$ Stern-Gerlach: $\vec{B} ( x , y , z )   \rightarrow  %
+                  \vec{F}  =  \vec{\nabla}( \vec{\mu} \cdot  \vec{B} )%
+                    \neq   0$}
+
+$\YgorUD{%
+       \vec{B}= \cancel{- \alpha x \widehat{i}} + ( B_{ \circ}  +  \alpha z ) \widehat{k}%
+   }{%
+       H ( t )=\left\{ \YgorUD{%
+           \vec{\mu}\cdot \vec{B}%
+       }{%
+           0%
+       }\right. \left|\YgorUD{%
+           t\in[0 , T ]%
+       }{%
+           \text{else}%
+       } \right\}%
+   }  $%
+   \hfill\textbullet\hfill%
+   $\YgorUD{%
+       E_{ \pm}  =  \mp \gamma  ( B_{ \circ}  + \alpha z )\hbar / 2%
+       \,\,\text{\textbullet}\,\, p_{ z} = \alpha \gamma \hbar / 2%
+       \,\,\text{\textbullet}\,\, q \equiv \sfrac{i \gamma  B_{ \circ} }{2}%
+   }{%
+           \chi ( t ) = \left[ \YgorUD{%
+           a\chi_{ +} + b\chi_{ -}%
+       }{%
+           a e^{ ( q T  + ip_{ z} z )}   ( \chi_{ +} ) \,+\, %
+           b e^{ - ( q T  + ip_{ z} z )}  ( \chi_{ -} )   %
+       }\right. \left| \YgorUD{%
+           t<0%
+       }{%
+           t>T%
+       } \right]%
+   }$
+
+
+\subsection{T.I.\ Perturbation Theory: $H  \equiv  H^{0}   +   \lambda H'$}
+
+$\YgorUD{\YgorUD{%
+        H^{0}  \ket{ \psi ^{0}_{n} } = E^{0}_{n}  \ket{ \psi ^{0}_{n} }%
+    }{%
+        E^{1}_{n} = \bra{ \psi ^{0}_{n} }  H'  \ket{ \psi ^{0}_{n} }%
+    }}{\,} $%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \ket{ \psi ^{1}_{n} } =   \sum\limits_{m \neq n}    %
+        \frac{ \bra{ \psi ^{0}_{m} }   H'   \ket{ \psi ^{0}_{n} }}{%
+        E^{0}_{n}  -  E^{0}_{m}}   \ket{ \psi ^{0}_{m} }%
+    }{%
+        \,%
+    }$%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        E^{2}_{n} =   \sum\limits_{m \neq n}    %
+        \frac{ | \bra{ \psi ^{0}_{m} }   H'   \ket{ \psi ^{0}_{n} } |^{ 2}}{%
+        E^{0}_{n}  -  E^{0}_{m}}%
+    }{%
+        \,%
+    }$
+\hrule
+
+$\YgorUD{%
+        \YgorUD{%
+            \YgorUD{%
+                \,%
+            }{%
+                \text{If: }\,\,\,H^{0}  \ket{ \psi ^{0}_{a} } = E^{0} %
+                \ket{ \psi ^{0}_{a} }%
+            }% 
+        }{%
+            \YgorUD{%
+                \text{and }H^{0}  \ket{ \psi ^{0}_{b} } = E^{0} %
+                \ket{ \psi ^{0}_{b} }%
+            }{%
+                \text{and maybe more}...%
+            }%
+        }%
+    }{%
+        \YgorUD{%
+            \YgorUD{%
+                \text{so }\,\,\,\,H^{0}  \ket{ \psi ^{0}_{\text{\Smiley}} } = %
+                           E^{0}  \ket{ \psi ^{0}_{\text{\Smiley}} }%
+            }{%
+                \text{w/ }\ket{ \psi ^{0}_{\text{\Smiley}} } = \alpha %
+                \ket{ \psi ^{0}_{a} }  + %
+            }% 
+        }{%
+            \YgorUD{%
+                \quad\quad\quad +  \beta \ket{ \psi ^{0}_{b} }  + ...%
+            }{%
+                \,%
+            }%
+        }%
+    }   $%
+    \hfill\textbullet\hfill%
+    $\YgorUD{%
+        \YgorUD{%
+            \YgorUD{%
+                \text{We need to determine the $\alpha, \beta$ that will}%
+            }{%
+                \text{split the degen.\ $\psi$'s into distinct e-val's}%
+            }%
+        }{%
+            \YgorUD{%
+                \text{cleanly when $H'$is applied. There are two}%
+            }{%
+                \text{ways.  [ 1 ]  find $A  =   A^{\dagger}$ s.t.\ %
+                $[ A , H^{0} ] = [ A , H' ] = 0$}%
+            }%
+        }%
+    }{%
+        \YgorUD{%
+            \YgorUD{%
+                \text{which are NOT degen.\ for the $\psi$'s in $E^{ 0}$s}%
+            }{%
+                \text{sub-space ($ \psi ^{0}_{a} , \psi ^{0}_{b} ,... $) %
+                      and use non-degen.}%
+            }%
+        }{%
+            \YgorUD{%
+                \text{ [ 2 ]  solve \smash{\textbf{W}} eigenprob for $\alpha,\beta$ %
+                      and $E^{1}$(s).}%
+            }{%
+                \text{You hopefully get $N$ $E$'s and req'd $\alpha,\beta$.}%
+            }%
+        }%
+    }$%
+
+$\left.\left(  \YgorUD{%
+        W_{aa}\,\,W_{ab}%
+    }{%
+        W_{ba}\,\,W_{bb}%
+    }  \right)   %
+    \left[ \YgorUD{%
+        \alpha%
+    }{%
+        \beta%
+    } \right]  =  E^{1}  %
+    \left[ \YgorUD{%
+        \alpha%
+    }{%
+        \beta%
+    } \right]\right|%
+    \YgorUD{%
+        W_{ij} = \bra{ \psi ^{0}_{i} } H' \ket{ \psi ^{0}_{j} }%
+    }{%
+        \ket{ \psi ^{0}_{\text{\Smiley}} } = \alpha %
+        \ket{ \psi ^{0}_{a} }  + %
+        \beta \ket{ \psi ^{0}_{b} }  + ...%
+    }$%
+    $\Rightarrow%
+        \YgorUD{%
+            \text{Solve }N \times N :%
+        }{%
+            \text{det}( \text{\textbf{W}}  -  \lambda )=0%
+        }$
+
+
+
+\subsection{Variational Principle}
+
+$E_{gs}  \leq  \braket{ \psi |H| \psi }$ for any normalized
+$\ket{ \psi }$. Simply minimize!
+
+
+\subsection{V$\propto$x: %
+    $\partial_{ x}^{ 2}  \psi  =  \alpha^{ 3}  x  \psi$ %
+    $ \rightarrow  \psi  =  C A i ( x )  +   D B i ( x )$ %
+    ( Airy's )}
+
+    $\YgorUD{%
+        A i ( x \gg  0 ) \sim e^{  - \frac{2}{3} x^{ 3 / 2}}%
+               /  ( 2 \sqrt{ \pi}x^{ 1 / 4} )%
+    }{%
+        B i ( x \gg  0 ) \sim e^{  + \frac{2}{3} x^{ 3 / 2}}%
+               /  ( \sqrt{ \pi}x^{ 1 / 4} )%
+    }   $\hfill\textbullet\hfill%
+    $\YgorUD{%
+        A i ( x \ll  0 ) \sim %
+        \sin \big[ \frac{2}{3} ( - x )^{ 3 / 2}  + 
+\frac{\pi}{4} \big]%
+         / ( \sqrt{ \pi}( - x )^{ 1 / 4} )%
+    }{%
+        B i ( x \ll  0 ) \sim %
+        \cos \big[ \frac{2}{3} ( - x )^{ 3 / 2}  + 
+\frac{\pi}{4} \big]%
+         / ( \sqrt{ \pi}( - x )^{ 1 / 4} )%
+    }$%
+
+
+
+\subsection{T.D.\ Perturbation Theory: $H  \equiv  H^{0}   +   \lambda H' ( t_{ > 0} )$}
+
+$\YgorUD{%
+        H^{0} \psi_{n}^{0}  =  E_{n}^{0} \psi_{n}^{0}%
+    }{%
+        H'_{ m n}  \equiv  \braket{ \psi_{m}^{0} |H'| \psi_{n}^{0} }%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \Psi ( t ) = \smash{\sum\limits_{ n}}   %
+        c_{n} ( t ) \psi_{n} e^{ - iE_{n} t / \hbar}%
+        \,\text{\textbullet}\, \Delta_{ m n} \equiv E_{m} - E_{n}%
+    }{%
+        \partial_{t} c_{m} = \frac{1}{i\hbar} \smash{\sum\limits_{ n}}  %
+        c_{n} H'_{mn} e^{ - i\Delta_{ m n}  t / \hbar} %
+        \text{ (exact)}%
+    }$
+\hrule
+
+$\YgorUD{%
+        \text{(F.O.) }%
+        c_{ n} ( t ) \approx 1  +  \frac{1}{i\hbar}  \smash{\int\limits_{0}^{t}}%
+          H'_{ n n} ( t' ) dt'%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        c_{ m \neq n} ( t ) \approx \frac{1}{i\hbar} \smash{\int\limits_{0}^{t}}%
+          H'_{m n} ( t' ) e^{ - i\Delta_{ m n}  t'  / \hbar}  dt '%
+    }{%
+        \,%
+    }$
+\hrule
+
+$\YgorUD{%
+        \smash{\overset{\partial_{t} H' = 0:%
+        }{P_{ n \rightarrow m} =}} %
+        \frac{\sin^{ 2} ( \Delta_{ n m}   t  / 2\hbar )}{%
+            \Delta_{ n m}^{2} / ( 4 | H'_{ m n} |^{ 2} )}%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \smash{\underset{\text{iff } \Delta_{ n m} = \pm \hbar\omega%
+        }{\overset{H' = V \cos \omega t:%
+        }{P_{ n \rightarrow m} =}}} %
+        \frac{\sin^{ 2} ( ( \Delta_{ n m}  \pm  \omega\hbar )   t  / 2\hbar )}{%
+            ( \Delta_{ n m} \pm  \omega\hbar )^{ 2} / ( | V_{ m n} |^{ 2} )}%
+    }{%
+        \,%
+    }$
+\hrule
+
+$\YgorUD{%
+        \YgorUD{\text{Spon. emi-}}{\text{ssion rate:}}%
+        A = \frac{\omega^{3}_{0} | \mathcal{P} |^{2}}{3 \pi%
+        \epsilon_{ \circ}%
+        \hbar c^{3}}%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \mathcal{P} = q \braket{ \psi_{b} |\vec{r}| \psi_{a} }%
+    }{%
+        \,%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \YgorUD{\text{Life-}}{\text{time:}}%
+        \tau = \frac{1}{A_{1} + A_{2} + ...}%
+    }{%
+        \,%
+    }$
+
+
+
+\subsection{WKB(J) -- (Classical endpoints $a,b$; $L \rightarrow R$)}
+
+    $\YgorUD{%
+        \text{Assume } \psi = A( x )e^{i\phi( x )}%
+    }{%
+        \text{\& } \partial_{ x}^{2} [ A ] / A \ll %
+        \left( ( \partial_{ x}  \phi )^{ 2} \,\&\,%
+        p^{ 2} / \hbar^{ 2} \right)%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \psi( x ) \approx C%
+        \exp\left(  \frac{\pm i}{\hbar}    \int_{ a}^{ b}  p( x' ) dx' \right)%
+         / \sqrt{p( x )}%
+    }{%
+        p( x ) = \sqrt{2m( E - V_{ \circ} )}%
+        \text{ ``classical'' p}.%
+    }$
+\hrule
+
+    $\YgorUD{%
+        \text{Tunneling $a\rightarrow b$: } T=| F |^{ 2} / | A |^{ 2}%
+        \approx e^{-2\gamma}%
+        \text{ \textbullet }\,%
+        \gamma\hbar \equiv \int_{ a}^{ b}   \sqrt{|p ( x ) |^{ 2}}dx%
+    }{%
+        \,%
+    }$
+\hrule
+
+    $\YgorUD{%
+        \text{2 | walls:}%
+          \int_{ a}^{ b} p( x )dx = n\pi\hbar%
+    }{%
+        \text{1 | wall @a:}%
+          \int_{ a}^{ b} p( x )dx = ( n - \frac{1}{4} )\pi\hbar%
+    }      $\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \text{no | walls:}%
+          \int_{ a}^{ b} p( x )dx = ( n - \frac{1}{2} )\pi\hbar%
+    }{%
+        \text{w /} n=1,2,..%
+        \smash{\underset{\text{(semi-classical regime)}}{\text{\textbullet\, Best when: }n \gg 1}}%
+    }$
+
+\hrule
+
+    $\YgorUD{%
+        \langle T\rangle = \frac{1}{2} \partial_{ n}  [ E_{n} ]%
+        ( n - \frac{1}{2} )%
+        \text{ when there are no | walls.}
+    }{%
+        \,%
+    }$
+
+
+
+\subsection{Scattering: Partial wave, Born}
+
+$\YgorUD{%
+        D ( \theta ) = \frac{d\sigma}{d\Omega} = | f ( \theta ) |^{ 2}%
+    }{
+        \sigma=\int    D( \theta ) d\Omega%
+    } $\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \psi( r , \theta )\approx A[e^{ ikz}%
+         + f ( \theta ) \frac{e^{ ikr}}{r} ]%
+    }{%
+        h_{ 0}^{ ( 1 )}  = \frac{e^{ ix}}{ix}%
+        \text{\textbullet}%
+        h_{ l}^{ ( 1 )}  \equiv j_{ l} ( x ) + i n_{ l} ( x )%
+    } $\hfill\textbullet\hfill%
+    $\YgorUD{%
+        u ( r )=Arj_{ l} ( kr ) + Brn_{ l} ( kr )%
+    }{%
+        \YgorUD{\text{Use $u$ near origin,}}{\text{match with expansion.}}%
+    }$
+
+$\YgorUD{%
+        e^{ ikz}=\sum_{i=0}^{\infty} i^{l}( 2l + 1 ) %
+        j_{ l} ( kr ) P_{l} ( \cos \theta )%
+        \,\,\text{\textbullet}\,\, \sigma = 4\pi \sum_{i=0}^{\infty}%
+         ( 2l + 1 ) | a_{ l} |^{2}%
+    }{%
+        \psi( r , \theta )=A\sum_{i=0}^{\infty} i^{l} ( 2l + 1 ) %
+        [j_{ l} ( kr ) + ika_{ l}h_{ l}^{ ( 1 )}  ( kr ) ]P_{l} ( \cos \theta )%
+        \,\,\leftarrow \text{impose b.c.'s.}%
+    }$
+
+\hrule
+
+$\YgorUD{%
+        \text{1. $V ( \vec{r}_{ 0} )$ is localized about $\vec{r}_{ 0}$ %
+        2. incoming wave $\sim$ not altered.}%
+    }{%
+        %
+    }$
+
+$\YgorUD{%
+        \psi ( \vec{r}) = \psi_{ 0} ( \vec{r}) - \frac{m}{2 \pi \hbar^{2}}%
+          \int  \frac{e^{ ik| \vec{r} - \vec{r}_{ 0} |}}{%
+        | \vec{r} - \vec{r}_{ 0} |} V ( \vec{r}_{ 0} )%
+        \psi ( \vec{r}_{ 0} ) d^{ 3} \vec{r}_{ 0}%
+        \,\,\text{ s.t. }\,\,%
+        ( \nabla^{2}  + k^{2} )\psi_{ 0} = 0%
+    }{%
+        \text{Born}\rightarrow%
+        f ( \theta ,\phi ) \approx \frac{-m}{2 \pi \hbar^{2}}%
+          \int   e^{ i( \vec{k}' - \vec{k} )\cdot \vec{r}'}%
+        V ( \vec{r}' ) d^{ 3} \vec{r}'%
+        \,\text{ s.t. }\, \vec{k}=k\widehat{r}, \vec{k}'=k\widehat{z}%
+    }$
+
+$\YgorUD{%
+        \overset{\text{Low-E:}}{%
+        f ( \theta ,\phi ) \approx} \smash{\frac{-m}{2 \pi \hbar^{2}}}%
+          \int   V ( \vec{r}' ) d^{ 3} \vec{r}'%
+        \quad\quad\text{\textbullet}\quad\quad%
+        \overset{\text{Spherical sym: }\, \kappa = 2k \sin ( \theta / 2 )}{%
+        f ( \theta ) \approx\smash{\frac{- 2m}{\kappa \hbar^{2}}}%
+          \int   r V ( r )  \sin ( \kappa r ) dr}%
+    }{%
+        \text{1. $V ( \vec{r}_{ 0} )$ is localized about $\vec{r}_{ 0}$ %
+        2. incoming wave $\sim$ not altered.}%
+    }$
+
+
+\section{Electrodynamics}
+
+$\overset{\text{\underline{General}}}{\YgorUD{
+        \YgorUD{
+            \text{Gauss' }%
+            \vec{\nabla} \cdot \vec{E} = \sfrac{\rho}{\epsilon_{ \circ}}%    
+        }{%
+            \text{Faraday's }%
+            \vec{\nabla} \times \vec{E} = -\partial_{t}\vec{B}%
+        }%
+    }{%
+        \YgorUD{
+            \text{No monopoles }%
+            \vec{\nabla} \cdot \vec{B} = 0%
+        }{%
+            \text{Ampere's }%
+            \vec{\nabla} \times \vec{B} = \mu_{ \circ} ( \vec{J}  +  %
+            \epsilon_{ \circ} \partial_{t} \vec{E} )%
+        }%
+    }}        $\hfill\textbullet\hfill%
+    $\overset{\text{\underline{In matter}}}{\YgorUD{
+        \YgorUD{
+            \vec{\nabla} \cdot \vec{D} = \rho_{f}%    
+        }{%
+            \vec{\nabla} \times \vec{E} = -\partial_{t}\vec{B}%
+        }%
+    }{%
+        \YgorUD{
+            \vec{\nabla} \cdot \vec{B} = 0%
+        }{%
+            \vec{\nabla} \times \vec{H} = \vec{J}_{f} + %
+            \partial_{t}\vec{D}%
+        }%
+    }}    $\hfill\textbullet\hfill%
+    $\overset{\text{\underline{Aux.\ \& Pot.s}}}{\YgorUD{
+        \YgorUD{
+            \vec{D} = \epsilon_{ \circ}\vec{E}+\vec{P}%
+        }{%
+            \vec{H} = \frac{1}{\mu_{ \circ}}\vec{B}-\vec{M}%
+        }%
+    }{%
+        \YgorUD{
+            \vec{E} = - \vec{\nabla} V -\partial_{t} \vec{A}%
+        }{%
+            \vec{B} = \vec{\nabla}\times\vec{A} %
+        }%
+    }}$
+
+$\YgorUD{
+        \text{Linear media: } \vec{P} = \epsilon_{ \circ} \chi_{ e}\vec{E}%
+        \text{ so } \vec{D} = \epsilon \vec{E}%
+        \,\,\text{\&}\,\,%
+        \vec{M}=\chi_{ m}\vec{H}%
+        \text{ so } \vec{H} = \frac{1}{\mu}\vec{B}.%
+    }{%
+        \,%
+    }$
+\hrule
+
+$\YgorUD{%
+        \text{Enrg: } U = \frac{1}{2} \int  ( \epsilon_{ \circ}  E^{2}  + %
+        \frac{1}{\mu_{ \circ}}   B^{2} ) dV%
+    }{%
+        \text{Momntm: } \vec{P} = \epsilon_{ \circ}  \int ( \vec{E}\times\vec{B} ) dV%
+    }  $\hfill\textbullet\hfill%
+    $  \YgorUD{%
+        \text{Poynting: } \vec{S} = \frac{1}{\mu_{ \circ}} ( \vec{E}\times\vec{B} )%
+    }{%
+        \text{Larmor: } P = \frac{\mu_{ \circ}}{6\pi c} q^{2} a^{2}%
+    }  $\hfill\textbullet\hfill%
+    $\YgorUD{%
+        C \equiv  Q / V%
+    }{%
+        W = C V^{ 2}  / 2%
+    }$
+\hrule
+
+$\YgorUD{%
+        \vec{F} = q(\vec{E} + \vec{v}\times\vec{B})%
+    }{%
+        \frac{-\sigma}{\epsilon_{ \circ}}  = %
+        \widehat{n}\cdot \vec{\nabla} V \big|%
+        _{\text{@surf}}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        W = Q[ V ( \vec{r})  - V ( \mathcal{O} ) ]%
+    }{%
+        W =\frac{1}{2}  \int  Vdq%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \vec{F} =\widehat{n}\sigma^{2}  / 2\epsilon_{ \circ}%
+    }{%
+        \smash{\underset{\text{surf. press.}}{P =%
+        E^{2}\epsilon_{ \circ} / 2}}%
+    }$\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \,%
+    }{%
+        \,%
+    }$
+\hrule
+
+$\YgorUD{%
+        \text{Spherical image: }%
+        | r_{ q} | = a \rightarrow q' = - qR  / a\,\&\,%
+        \smash{| r_{ q'} |} = R^{2}  /a%
+        \text{\textbullet}%
+        V ( \vec{r}) = k( ( q / \rcurst ) + ( q ' / \rcurst ' ) )%
+    }{%
+        \smash{\underset{\text{( Laplace )}}{   - \nabla^{2} V = \smash{\cancel{\rho  / \epsilon_{ \circ}}}}}
+        \text{ solve via sep.vars: }%
+        V \equiv\smash{ X ( x ) Y ( y ) Z ( z )%
+        \rightarrow\frac{1}{X} \partial_{x}^{2}X = C \rightarrow} \text{B.c.'s!}%
+    }$
+
+
+
+$\left.\YgorUD{%
+        \vec{E}( \vec{r}) = \frac{1}{4 \pi \epsilon_{ \circ}} %
+        \sum\limits_{i}^{N}   \frac{q_{i} \widehat{\rcurst}}{\rcurst^{2}_{i}}%
+    }{%
+        \vec{E}( \vec{r}) = \frac{1}{4 \pi \epsilon_{ \circ}} %
+        \int\limits_{\mathbb{V}}   \frac{1}{\rcurst^{2}}%
+        \widehat{\rcurst} dq%
+    }\right|%
+    \YgorUD{%
+        \YgorUD{%
+            dq=\{\lambda dl , %
+        }{%
+            \,\sigma da , \rho dV \} ,%
+        }%
+    }{%
+        \YgorUD{%
+            \vec{\rcurst}=\vec{r}-\vec{r}',%
+        }{%
+            q\text{ at }\vec{r}'.%
+        }%
+    }    $\hfill\textbullet\hfill%
+    $\YgorUD{%
+        \YgorUD{%
+            \oint   \vec{E}\cdot d\vec{a}=%
+            \smash{\frac{Q_{\text{enc}}}{\epsilon_{ \circ}}}%
+        }{%
+            \vec{E} = -\vec{\nabla} V%
+        }%
+    }{%
+        \vec{E} = \frac{\sigma \widehat{n}}{2\epsilon_{ \circ}}%
+        \YgorUD{\text{\tiny ( $\infty$}%
+        }{\text{\tiny plane)}}%
+    }    $\hfill\textbullet\hfill%
+    $\YgorUD{%
+        V ( \vec{r})  = - \int\limits_{\mathcal{O}}^{\vec{r}}   %
+        \vec{E}\cdot d\vec{l}%
+    }{%
+        V ( \vec{r}) = \frac{1}{4 \pi \epsilon_{ \circ}} %
+        \int\limits_{\mathbb{V}}   \frac{1}{\rcurst}%
+        dq%
+    }$
+
+\hrule
+
+
+\subsection{Geometry -- $4 \pi \epsilon_{ \circ}  V ( \vec{r})$%
+    \textbullet $4 \pi \epsilon_{ \circ}  \vec{E} ( \vec{r})$}
+
+$\YgorUD{\text{1D wire. $|| \widehat{x}$. Len: L}%
+    }{\text{ $\perp$ above cent.}}$%
+  \hfill\textbullet\hfill%
+  $\lambda \ln \Big(  \frac{L}{z}  +  \sqrt{ 1  +   %
+        ( L / z )^{ 2}} \Big)$%
+  \hfill\textbullet\hfill%
+  $\frac{( \lambda   L )}{z \sqrt{  z^{ 2}  +  %
+        L^{ 2}  / 4}} \widehat{z}$
+\hrule
+$\YgorUD{\text{2D ring. $\widehat{x}  -  \widehat{y}$.}%
+                  }{\text{ $\perp$ above cent.}}$%
+  \hfill\textbullet\hfill%
+  $\frac{( \lambda 2\pi R )}{( R^{2}  +  z^{2} )^{ 1 / 2}}$%
+  \hfill\textbullet\hfill%
+  $\frac{z ( \lambda 2\pi R )}{( R^{2}  +  z^{2} )^{ 3 / 2}}%
+        \widehat{z}$
+\hrule
+$\YgorUD{\text{2D disk. $\widehat{x}  -  \widehat{y}$.}%
+                  }{\text{ $\perp$ above cent.}}$%
+  \hfill\textbullet\hfill%
+  $\frac{q}{R^{2}} \left(  \sqrt{  z^{2}   +   R^{2}} - |z|  \right)$%
+  \hfill\textbullet\hfill%
+  $2\frac{( \sigma \pi R^{2} )}{R^{2}}\Big( 1  +   %
+        \frac{-|z|}{\sqrt{  z^{2}  +  R^{2}}} \Big) \widehat{z}$
+\hrule
+$\YgorUD{\text{3D sph.\ shell.}%
+                  }{\text{ At origin.}}$%
+  \hfill\textbullet\hfill%
+  $\frac{q}{r} {\tiny \text{( out ),}} \frac{q}{R} {\tiny \text{( in )}}$%
+  \hfill\textbullet\hfill%
+  $\left.\frac{( \sigma 4\pi R^{2} )}{r^{2}} \widehat{r}\right|%
+   \YgorUD{r > R ,}{0 \text{else}}$
+\hrule
+
+
+\subsection{Magnetic Dipoles ($\vec{\mu}$ -- proton, electron)}
+$\vec{\mu}_{ p}  =  \frac{g_{ p}e}{2m_{ p}} %
+    \vec{S}_{ p}$\hfill\textbullet\hfill%
+    $\vec{\mu}_{ e}  =  \frac{-e}{m_{ e}} %
+    \vec{S}_{ e}$\hfill\textbullet\hfill%
+    $\vec{B}_{ \mu}  =  \frac{\mu_{ 0}}{4 \pi  r^{ 3}}  \left[ %
+    3( \vec{\mu} \cdot \widehat{r} )\widehat{r}  -  \vec{\mu}\right]  +  %
+    \frac{2\mu_{ 0}}{3} \vec{\mu} \delta^{3} ( \vec{r} )$
+
+
+\subsection{Electric Dipoles ($\pm | q |$ sep.\ by %
+    $\vec{d} \Rightarrow \vec{p}_{e}  =  - q\vec{d}$)}
+
+$\vec{p}_{ e}   =   \int  \vec{r}'  %
+    \rho ( \vec{r}' )d^{3} \vec{r}' $%
+    \hfill\textbullet\hfill%
+    $\frac{V}{k}  =   %
+    \frac{q}{\rcurst_{ +}}   ^{-}   \frac{q}{\rcurst_{ -}}%
+      \approx   %
+    \frac{\vec{p}\cdot\widehat{r}}{r^{2}}$%
+    \hfill\textbullet\hfill%
+    $\smash{\frac{\vec{E}}{k}}  =   \frac{1}{r^{ 3}} [ 3 ( \vec{p}%
+     \cdot \widehat{r} ) \widehat{r} - \vec{p} ]%
+      -  \frac{4 \pi}{3} \vec{p}\delta^{ 3} ( \vec{r})$
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Force the existing page to extend to the end. LaTeX is apparently smart enough
+% to NOT begin a third (empty) page. This just stretches the multicols
+% environment to the bottom of the page.
+\newpage
+
+\end{multicols}
+
+\end{document}
+
+% vim: set wrap tw=80:
